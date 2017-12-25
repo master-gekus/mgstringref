@@ -82,6 +82,6 @@ TEST(Helpers, CustomAllocator)
     m.emplace(inplace_string("String must be lenght enough to allocated memory.", a),
               inplace_string("String must be lenght enough to allocated memory.", a));
 
-    EXPECT_EQ(m.size(), 1);
+    EXPECT_EQ(m.size(), static_cast<size_t>(1));
     EXPECT_EQ(m.begin()->first, s1);
 }
