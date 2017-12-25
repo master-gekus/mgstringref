@@ -24,9 +24,9 @@ namespace mg {
     private:
         struct _Data {
             mutable std::atomic<int> ref_;
-            size_t len_;
+            difference_type len_;
             value_type const* ptr_;
-            value_type data_[] alignas(alignof(value_type));
+            alignas(alignof(value_type)) value_type data_[];
         };
         static constexpr const std::size_t _Data_Header_Len
             = (sizeof(_Data) + sizeof(value_type) - 1) / sizeof(value_type);
