@@ -26,10 +26,16 @@ namespace mg {
             mutable std::atomic<int> ref_;
             difference_type len_;
             value_type const* ptr_;
+#ifdef _MSC_VER
+#pragma warning(disable: 4200)
+#endif
             alignas(alignof(value_type)) value_type data_[];
+#ifdef _MSC_VER
+#pragma warning(default: 4200)
+#endif
         };
-        static constexpr const std::size_t _Data_Header_Len
-            = (sizeof(_Data) + sizeof(value_type) - 1) / sizeof(value_type);
+        static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
+        static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);
 
     public:
         explicit basic_stringref(const _Alloc& a = _Alloc()) :
