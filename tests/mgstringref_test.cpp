@@ -78,7 +78,7 @@ TEST(Helpers, CustomAllocator)
     EXPECT_EQ(s1, s2);
 
     std::map<inplace_string, inplace_string, std::less<inplace_string>,
-            inplace_alloc<std::pair<inplace_string,inplace_string> > > m(a);
+            inplace_alloc<std::map<inplace_string, inplace_string>::value_type> > m(a);
     m.emplace(inplace_string("String must be lenght enough to allocated memory.", a),
               inplace_string("String must be lenght enough to allocated memory.", a));
 
