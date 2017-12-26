@@ -20,7 +20,8 @@ namespace inplace {
             buffer_(static_cast<char*>(buffer)),
             block_size_(block_size)
         {
-            if ((nullptr == buffer_) || (0 == buffer_size) || (2 > block_size) || (block_size > buffer_size)) {
+            if ((nullptr == buffer_) || (0 == buffer_size) || ((sizeof(std::size_t) + sizeof(T)) > block_size)
+                || (block_size > buffer_size)) {
                 throw std::bad_alloc();
             }
             block_count_ = buffer_size / block_size;
@@ -37,25 +38,28 @@ namespace inplace {
 
         T* allocate(std::size_t n)
         {
-            if ((n * sizeof(T)) > (block_size_ - 1)) {
+            if ((n * sizeof(T)) > (block_size_ - sizeof(size_t))) {
                 throw std::bad_alloc();
             }
             for (size_t i = 0; i < block_count_; i++) {
-                if (0 == buffer_[i * block_size_]) {
-                    buffer_[i * block_size_] = 1;
-                    return reinterpret_cast<T*>(buffer_ + i * block_size_ + 1);
+                std::size_t *header = reinterpret_cast<std::size_t*>(buffer_ + (i * block_size_));
+                if (0 == (*header)) {
+                    (*header) = (n * sizeof(T));
+                    return reinterpret_cast<T*>(buffer_ + i * block_size_ + sizeof(size_t));
                 }
             }
             throw std::bad_alloc();
         }
 
-        void deallocate(T* p, std::size_t) noexcept
+        void deallocate(T* p, std::size_t n) noexcept
         {
-            size_t offset = reinterpret_cast<char*>(p) - buffer_ - 1;
-            if (offset > (block_count_ * block_size_) || (0 != (offset % block_size_))) {
-                return; // Pointer not allocated by this allocator
+            size_t offset = reinterpret_cast<char*>(p) - buffer_ - sizeof(size_t);
+            std::size_t *header = reinterpret_cast<std::size_t*>(buffer_ + offset);
+            if (offset > (block_count_ * block_size_) || (0 != (offset % block_size_))
+                || ((n * sizeof(T)) != (*header))) {
+                throw std::bad_alloc();
             }
-            buffer_[offset] = 0;
+            (*header) = 0;
         }
 
         size_t used_block_count()
@@ -131,4 +135,5 @@ TEST_F(CustomAllocator, EmptyConstrution)
     using namespace inplace;
     stringref s(a);
     ustringref us(a);
+    EXPECT_EQ(a.used_block_count(), static_cast<size_t>(0));
 }
