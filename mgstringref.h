@@ -23,9 +23,13 @@ namespace mg {
 
     private:
         struct _Data {
+            constexpr _Data(value_type const* ptr, size_type len, size_type allocated, int ref) :
+                ref_(ref), len_(len), allocated_(allocated), ptr_(ptr), data_()
+            {}
+
             mutable std::atomic<int> ref_;
-            difference_type len_;
-            difference_type allocated_;
+            size_type len_;
+            size_type allocated_;
             value_type const* ptr_;
 #ifdef _MSC_VER
 #pragma warning(disable: 4200)
@@ -38,16 +42,72 @@ namespace mg {
         static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
         static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);
 
+        size_type __int_strlen(const value_type* string)
+        {
+            return (nullptr == string) ? 0 : _Traits::length(string);
+        }
+
+        void __int_construct_ref(const value_type* string, size_type size)
+        {
+            if ((nullptr == string) || (0 == size)) {
+                return;
+            }
+            value_type *data = _Alloc_traits::allocate(a_, _Data_Header_Len);
+            d_ = new(data) _Data(string, size, 0, 1);
+        }
+
+        void __int_construct_ref_offset(const value_type* string, size_type size, size_type offset, size_type length)
+        {
+            if (offset >= size) {
+                return;
+            }
+            __int_construct_ref(string, size);
+            offset_ = offset;
+            len_ = ((offset + length) > size) ? (size - offset) : length;
+        }
+
+        void __int_release_data()
+        {
+            if (d_ && (0 == (--d_->ref_))) {
+                d_->~_Data();
+                _Alloc_traits::deallocate(a_, reinterpret_cast<value_type*>(d_), d_->allocated_ + _Data_Header_Len);
+            }
+            d_ = nullptr;
+        }
+
     public:
         explicit basic_stringref(const _Alloc& a = _Alloc()) :
             d_(nullptr), offset_(0), len_(0), a_(a)
         {}
 
+        explicit basic_stringref(const value_type* string, const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(__int_strlen(string)), a_(a)
+        {
+            __int_construct_ref(string, len_);
+        }
+
+        basic_stringref(const value_type* string, size_type size, const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(size), a_(a)
+        {
+            __int_construct_ref(string, size);
+        }
+
+        basic_stringref(const value_type* string, size_type offset, size_type length, const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(0), a_(a)
+        {
+            __int_construct_ref_offset(string, __int_strlen(string), offset, length);
+        }
+
+        basic_stringref(const value_type* string, size_type size, size_type offset, size_type length,
+                        const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(0), a_(a)
+        {
+            __int_construct_ref_offset(string, size, offset, length);
+        }
+
         ~basic_stringref()
         {
-            if (d_ && (0 == (--d_->ref_))) {
-                _Alloc_traits::deallocate(a_, reinterpret_cast<value_type*>(d_), d_->allocated_ + _Data_Header_Len);
-            }
+            __int_release_data();
         }
 
         bool empty() const
@@ -55,10 +115,15 @@ namespace mg {
             return (0 == len_);
         }
 
+        size_type size() const
+        {
+            return len_;
+        }
+
     private:
         _Data *d_;
-        difference_type offset_;
-        difference_type len_;
+        size_type offset_;
+        size_type len_;
         _Char_alloc_type a_;
     };
 

@@ -87,6 +87,10 @@ namespace inplace {
     typedef mg::basic_stringref<char16_t, std::char_traits<char16_t>, allocator<char16_t> > ustringref;
 }
 
+class StandardAllocator : public ::testing::Test
+{
+};
+
 class CustomAllocator : public ::testing::Test
 {
 public:
@@ -100,7 +104,7 @@ protected:
 
     void TearDown() override
     {
-        EXPECT_EQ(a.used_block_count(), static_cast<size_t>(0));
+        EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
     }
 };
 
@@ -110,20 +114,20 @@ TEST_F(CustomAllocator, StandardContainers)
     string *s = new string("String must be lenght enough to allocated memory.", a);
     string s1(*s);
     string s2 = *s;
-    EXPECT_EQ(a.used_block_count(), static_cast<size_t>(3));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(3));
     delete s;
     EXPECT_EQ(s1, s2);
-    EXPECT_EQ(a.used_block_count(), static_cast<size_t>(2));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
 
     std::map<string, string, std::less<string>, allocator<std::map<string, string>::value_type> > m(a);
     m.emplace(string("String must be lenght enough to allocated memory.", a),
               string("String must be lenght enough to allocated memory.", a));
 
-    EXPECT_EQ(m.size(), static_cast<size_t>(1));
+    EXPECT_EQ(m.size(), static_cast<std::size_t>(1));
     EXPECT_EQ(m.begin()->first, s1);
 }
 
-TEST(StandardAllocator, EmptyConstrution)
+TEST_F(StandardAllocator, EmptyConstrution)
 {
     using namespace mg;
     stringref s;
@@ -137,7 +141,71 @@ TEST_F(CustomAllocator, EmptyConstrution)
     using namespace inplace;
     stringref s(a);
     ustringref us(a);
-    EXPECT_EQ(a.used_block_count(), static_cast<size_t>(0));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
     EXPECT_TRUE(s.empty());
     EXPECT_TRUE(us.empty());
 }
+
+TEST_F(StandardAllocator, ConstrutionFromConstString)
+{
+    using namespace mg;
+    stringref s("Test string.");
+    ustringref us(u"Test string.");
+    EXPECT_EQ(s.size(), static_cast<std::size_t>(12));
+    EXPECT_EQ(us.size(), static_cast<std::size_t>(12));
+
+    stringref s1("Test string.", 4);
+    ustringref us1(u"Test string.", 4);
+    EXPECT_EQ(s1.size(), static_cast<std::size_t>(4));
+    EXPECT_EQ(us1.size(), static_cast<std::size_t>(4));
+
+    stringref s2("Test string.", 5, 6);
+    ustringref us2(u"Test string.", 5, 6);
+    EXPECT_EQ(s2.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(us2.size(), static_cast<std::size_t>(6));
+
+    stringref s4("Test", 5, 6);
+    ustringref us4(u"Test", 5, 6);
+    EXPECT_TRUE(s4.empty());
+    EXPECT_TRUE(us4.empty());
+
+    stringref s5("Test", 1, 6);
+    ustringref us5(u"Test", 1, 6);
+    EXPECT_EQ(s5.size(), static_cast<std::size_t>(3));
+    EXPECT_EQ(us5.size(), static_cast<std::size_t>(3));
+}
+
+TEST_F(CustomAllocator, ConstrutionFromConstString)
+{
+    using namespace inplace;
+    stringref s("Test string.", a);
+    ustringref us(u"Test string.", a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s.size(), static_cast<std::size_t>(12));
+    EXPECT_EQ(us.size(), static_cast<std::size_t>(12));
+
+    stringref s1("Test string.", 4, a);
+    ustringref us1(u"Test string.", 4, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(s1.size(), static_cast<std::size_t>(4));
+    EXPECT_EQ(us1.size(), static_cast<std::size_t>(4));
+
+    stringref s2("Test string.", 5, 6, a);
+    ustringref us2(u"Test string.", 5, 6, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(s2.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(us2.size(), static_cast<std::size_t>(6));
+
+    stringref s4("Test", 5, 6, a);
+    ustringref us4(u"Test", 5, 6, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_TRUE(s4.empty());
+    EXPECT_TRUE(us4.empty());
+
+    stringref s5("Test", 1, 6, a);
+    ustringref us5(u"Test", 1, 6, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(8));
+    EXPECT_EQ(s5.size(), static_cast<std::size_t>(3));
+    EXPECT_EQ(us5.size(), static_cast<std::size_t>(3));
+}
+
