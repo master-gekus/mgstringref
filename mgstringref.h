@@ -24,20 +24,13 @@ namespace mg {
     private:
         struct _Data {
             constexpr _Data(value_type const* ptr, size_type len, size_type allocated, int ref) :
-                ref_(ref), len_(len), allocated_(allocated), ptr_(ptr), data_()
+                ref_(ref), len_(len), allocated_(allocated), ptr_(ptr)
             {}
 
             mutable std::atomic<int> ref_;
             size_type len_;
             size_type allocated_;
             value_type const* ptr_;
-#ifdef _MSC_VER
-#pragma warning(disable: 4200)
-#endif
-            alignas(alignof(value_type)) value_type data_[];
-#ifdef _MSC_VER
-#pragma warning(default: 4200)
-#endif
         };
         static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
         static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);

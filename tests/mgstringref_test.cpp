@@ -51,7 +51,7 @@ namespace inplace {
             throw std::bad_alloc();
         }
 
-        void deallocate(T* p, std::size_t n) noexcept
+        void deallocate(T* p, std::size_t n)
         {
             size_t offset = reinterpret_cast<char*>(p) - buffer_ - sizeof(size_t);
             std::size_t *header = reinterpret_cast<std::size_t*>(buffer_ + offset);
