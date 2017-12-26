@@ -83,8 +83,10 @@ namespace inplace {
 
     typedef std::basic_string<char, std::char_traits<char>, allocator<char> > string;
     typedef std::basic_string<char16_t, std::char_traits<char16_t>, allocator<char16_t> > ustring;
+    typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, allocator<wchar_t> > wstring;
     typedef mg::basic_stringref<char, std::char_traits<char>, allocator<char> > stringref;
     typedef mg::basic_stringref<char16_t, std::char_traits<char16_t>, allocator<char16_t> > ustringref;
+    typedef mg::basic_stringref<wchar_t, std::char_traits<wchar_t>, allocator<wchar_t> > wstringref;
 }
 
 class StandardAllocator : public ::testing::Test
@@ -207,5 +209,63 @@ TEST_F(CustomAllocator, ConstrutionFromConstString)
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(8));
     EXPECT_EQ(s5.size(), static_cast<std::size_t>(3));
     EXPECT_EQ(us5.size(), static_cast<std::size_t>(3));
+}
+
+TEST_F(StandardAllocator, ConstrutionFromStdString)
+{
+    std::string source("Test string");
+    std::wstring wsource(L"Test string");
+
+    using namespace mg;
+    stringref s(source);
+    wstringref ws(wsource);
+    EXPECT_EQ(s.size(), source.size());
+    EXPECT_EQ(ws.size(), wsource.size());
+
+    stringref s1(source, 5, 6);
+    wstringref ws1(wsource, 5, 6);
+    EXPECT_EQ(s1.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(ws1.size(), static_cast<std::size_t>(6));
+
+    stringref s2(source, 5, 10);
+    wstringref ws2(wsource, 5, 10);
+    EXPECT_EQ(s2.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(ws2.size(), static_cast<std::size_t>(6));
+
+    stringref s3(source, 11, 4);
+    wstringref ws3(wsource, 11, 4);
+    EXPECT_TRUE(s3.empty());
+    EXPECT_TRUE(ws3.empty());
+}
+
+TEST_F(CustomAllocator, ConstrutionFromStdString)
+{
+    std::string source("Test string");
+    std::wstring wsource(L"Test string");
+
+    using namespace inplace;
+    stringref s(source, a);
+    wstringref ws(wsource, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s.size(), source.size());
+    EXPECT_EQ(ws.size(), wsource.size());
+
+    stringref s1(source, 5, 6, a);
+    wstringref ws1(wsource, 5, 6, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(s1.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(ws1.size(), static_cast<std::size_t>(6));
+
+    stringref s2(source, 5, 10, a);
+    wstringref ws2(wsource, 5, 10, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(s2.size(), static_cast<std::size_t>(6));
+    EXPECT_EQ(ws2.size(), static_cast<std::size_t>(6));
+
+    stringref s3(source, 11, 4, a);
+    wstringref ws3(wsource, 11, 4, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_TRUE(s3.empty());
+    EXPECT_TRUE(ws3.empty());
 }
 

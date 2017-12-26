@@ -98,6 +98,21 @@ namespace mg {
             __int_construct_ref_offset(string, size, offset, length);
         }
 
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
+                        size_type length, const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(0), a_(a)
+        {
+            __int_construct_ref_offset(string.data(), string.size(), offset, length);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref(const std::basic_string<value_type, _OTraits, _OAlloc>& string, const _Alloc& a = _Alloc()) :
+            d_(nullptr), offset_(0), len_(string.size()), a_(a)
+        {
+            __int_construct_ref(string.data(), len_);
+        }
+
         ~basic_stringref()
         {
             __int_release_data();
@@ -124,6 +139,3 @@ namespace mg {
     typedef basic_stringref<char16_t> ustringref;
     typedef basic_stringref<wchar_t> wstringref;
 }
-
-
-
