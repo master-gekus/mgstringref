@@ -25,6 +25,7 @@ namespace mg {
         struct _Data {
             mutable std::atomic<int> ref_;
             difference_type len_;
+            difference_type allocated_;
             value_type const* ptr_;
 #ifdef _MSC_VER
 #pragma warning(disable: 4200)
@@ -39,18 +40,25 @@ namespace mg {
 
     public:
         explicit basic_stringref(const _Alloc& a = _Alloc()) :
-            d_(nullptr), a_(a)
+            d_(nullptr), offset_(0), len_(0), a_(a)
         {}
 
         ~basic_stringref()
         {
             if (d_ && (0 == (--d_->ref_))) {
-                _Alloc_traits::deallocate(a_, reinterpret_cast<value_type*>(d_), d_->len_ + _Data_Header_Len);
+                _Alloc_traits::deallocate(a_, reinterpret_cast<value_type*>(d_), d_->allocated_ + _Data_Header_Len);
             }
+        }
+
+        bool empty() const
+        {
+            return (0 == len_);
         }
 
     private:
         _Data *d_;
+        difference_type offset_;
+        difference_type len_;
         _Char_alloc_type a_;
     };
 

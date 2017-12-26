@@ -128,6 +128,8 @@ TEST(StandardAllocator, EmptyConstrution)
     using namespace mg;
     stringref s;
     ustringref us;
+    EXPECT_TRUE(s.empty());
+    EXPECT_TRUE(us.empty());
 }
 
 TEST_F(CustomAllocator, EmptyConstrution)
@@ -136,4 +138,6 @@ TEST_F(CustomAllocator, EmptyConstrution)
     stringref s(a);
     ustringref us(a);
     EXPECT_EQ(a.used_block_count(), static_cast<size_t>(0));
+    EXPECT_TRUE(s.empty());
+    EXPECT_TRUE(us.empty());
 }
