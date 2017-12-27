@@ -1,11 +1,27 @@
 #include "mgstringref.h"
 
 #include <cassert>
+#include <cstdio>
 #include <new>
 #include <string>
 #include <map>
 
 #include <gtest/gtest.h>
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+
+    printf("Enviroment:\n"
+           "  sizeof(char)     = %u\n"
+           "  sizeof(char16_t) = %u\n"
+           "  sizeof(wchar_t)  = %u\n",
+           static_cast<unsigned>(sizeof(char)),
+           static_cast<unsigned>(sizeof(char16_t)),
+           static_cast<unsigned>(sizeof(wchar_t)));
+
+    return RUN_ALL_TESTS();
+}
 
 namespace inplace {
     template <typename T>
