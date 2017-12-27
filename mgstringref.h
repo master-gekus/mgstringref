@@ -177,6 +177,11 @@ namespace mg {
             return len_;
         }
 
+        const_pointer data() const
+        {
+            return ptr_ + offset_;
+        }
+
         int compare(const_pointer other) const
         {
             return __int_compare(ptr_ + offset_, len_, other, __int_strlen(other));
@@ -193,10 +198,54 @@ namespace mg {
             return __int_compare(ptr_ + offset_, len_, string.data(), string.size());
         }
 
+        int compare(const basic_stringref& other) const
+        {
+            if (this == &other) {
+                return 0;
+            }
+            return __int_compare(ptr_ + offset_, len_, other.ptr_ + other.offset_, other.len_);
+        }
+
         template<typename _OTraits, typename _OAlloc>
         int compare(const basic_stringref<value_type, _OTraits, _OAlloc>& other) const
         {
-            return __int_compare(ptr_ + offset_, len_, other.ptr_ + other.offset_, other.len_);
+            return __int_compare(ptr_ + offset_, len_, other.data(), other.size());
+        }
+
+        template<typename T>
+        bool operator < (T other) const
+        {
+            return (0 > compare(other));
+        }
+
+        template<typename T>
+        bool operator <= (T other) const
+        {
+            return (0 >= compare(other));
+        }
+
+        template<typename T>
+        bool operator > (T other) const
+        {
+            return (0 < compare(other));
+        }
+
+        template<typename T>
+        bool operator >= (T other) const
+        {
+            return (0 <= compare(other));
+        }
+
+        template<typename T>
+        bool operator == (T other) const
+        {
+            return (0 == compare(other));
+        }
+
+        template<typename T>
+        bool operator != (T other) const
+        {
+            return (0 != compare(other));
         }
 
     private:
@@ -212,3 +261,39 @@ namespace mg {
     typedef basic_stringref<char16_t> ustringref;
     typedef basic_stringref<wchar_t> wstringref;
 }
+
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator < (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 < s2.compare(s1));
+}
+
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator <= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 <= s2.compare(s1));
+}
+
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator > (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 > s2.compare(s1));
+}
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator >= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 >= s2.compare(s1));
+}
+
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator == (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 == s2.compare(s1));
+}
+
+template<typename T, typename _CharT, typename _Traits, typename _Alloc>
+inline bool operator != (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+{
+    return (0 != s2.compare(s1));
+}
+

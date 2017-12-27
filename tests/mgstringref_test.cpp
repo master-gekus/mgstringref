@@ -589,3 +589,94 @@ TEST_F(CustomAllocator, ComparePartialCopy)
 
     CompareTest(s, ws);
 }
+
+TEST_F(StandardAllocator, CompareOperators)
+{
+    using namespace mg;
+    stringref s("ccc");
+    wstringref ws(L"ccc");
+
+    EXPECT_TRUE(s == "ccc");
+    EXPECT_TRUE(s != "ddd");
+    EXPECT_TRUE(s < "ddd");
+    EXPECT_TRUE(s <= "ddd");
+    EXPECT_TRUE(s <= "ccc");
+    EXPECT_TRUE(s > "bbb");
+    EXPECT_TRUE(s >= "bbb");
+    EXPECT_TRUE(s >= "ccc");
+
+    EXPECT_TRUE("ccc" == s);
+    EXPECT_TRUE("ddd" != s);
+    EXPECT_TRUE("bbb" < s);
+    EXPECT_TRUE("bbb" <= s);
+    EXPECT_TRUE("ccc" <= s);
+    EXPECT_TRUE("ddd" > s);
+    EXPECT_TRUE("ddd" >= s);
+    EXPECT_TRUE("ccc" >= s);
+
+    EXPECT_TRUE(ws == L"ccc");
+    EXPECT_TRUE(ws != L"ddd");
+    EXPECT_TRUE(ws < L"ddd");
+    EXPECT_TRUE(ws <= L"ddd");
+    EXPECT_TRUE(ws <= L"ccc");
+    EXPECT_TRUE(ws > L"bbb");
+    EXPECT_TRUE(ws >= L"bbb");
+    EXPECT_TRUE(ws >= L"ccc");
+
+    EXPECT_TRUE(L"ccc" == ws);
+    EXPECT_TRUE(L"ddd" != ws);
+    EXPECT_TRUE(L"bbb" < ws);
+    EXPECT_TRUE(L"bbb" <= ws);
+    EXPECT_TRUE(L"ccc" <= ws);
+    EXPECT_TRUE(L"ddd" > ws);
+    EXPECT_TRUE(L"ddd" >= ws);
+    EXPECT_TRUE(L"ccc" >= ws);
+}
+
+TEST_F(CustomAllocator, CompareOperators)
+{
+    using namespace inplace;
+    stringref s("ccc", a);
+    wstringref ws(L"ccc", a);
+
+    EXPECT_TRUE(s == "ccc");
+    EXPECT_TRUE(s != "ddd");
+    EXPECT_TRUE(s < "ddd");
+    EXPECT_TRUE(s <= "ddd");
+    EXPECT_TRUE(s <= "ccc");
+    EXPECT_TRUE(s > "bbb");
+    EXPECT_TRUE(s >= "bbb");
+    EXPECT_TRUE(s >= "ccc");
+    EXPECT_TRUE(s == mg::stringref("ccc"));
+
+    EXPECT_TRUE("ccc" == s);
+    EXPECT_TRUE("ddd" != s);
+    EXPECT_TRUE("bbb" < s);
+    EXPECT_TRUE("bbb" <= s);
+    EXPECT_TRUE("ccc" <= s);
+    EXPECT_TRUE("ddd" > s);
+    EXPECT_TRUE("ddd" >= s);
+    EXPECT_TRUE("ccc" >= s);
+    EXPECT_TRUE(mg::stringref("ccc") == s);
+
+    EXPECT_TRUE(ws == L"ccc");
+    EXPECT_TRUE(ws != L"ddd");
+    EXPECT_TRUE(ws < L"ddd");
+    EXPECT_TRUE(ws <= L"ddd");
+    EXPECT_TRUE(ws <= L"ccc");
+    EXPECT_TRUE(ws > L"bbb");
+    EXPECT_TRUE(ws >= L"bbb");
+    EXPECT_TRUE(ws >= L"ccc");
+    EXPECT_TRUE(ws == mg::wstringref(L"ccc"));
+
+    EXPECT_TRUE(L"ccc" == ws);
+    EXPECT_TRUE(L"ddd" != ws);
+    EXPECT_TRUE(L"bbb" < ws);
+    EXPECT_TRUE(L"bbb" <= ws);
+    EXPECT_TRUE(L"ccc" <= ws);
+    EXPECT_TRUE(L"ddd" > ws);
+    EXPECT_TRUE(L"ddd" >= ws);
+    EXPECT_TRUE(L"ccc" >= ws);
+    EXPECT_TRUE(mg::wstringref(L"ccc") == ws);
+}
+
