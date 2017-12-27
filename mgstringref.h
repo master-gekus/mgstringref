@@ -35,7 +35,7 @@ namespace mg {
         static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
         static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);
 
-        size_type __int_strlen(const_pointer string)
+        static size_type __int_strlen(const_pointer string)
         {
             return (nullptr == string) ? 0 : _Traits::length(string);
         }
@@ -77,6 +77,25 @@ namespace mg {
                 _Alloc_traits::deallocate(a_, reinterpret_cast<pointer>(d_), d_->allocated_ + _Data_Header_Len);
             }
             d_ = nullptr;
+        }
+
+        static int __int_compare(const_pointer s1, size_type size1, const_pointer s2, size_t size2)
+        {
+            int result = _Traits::compare(s1, s2, std::min(size1, size2));
+            if (size1 == size2) {
+                return result;
+            } else {
+                return result ? result : (size1 < size2) ? (-1) : 1;
+            }
+        }
+
+        int __int_compare(const_pointer s2, size_t size2) const
+        {
+            if (nullptr == d_) {
+                return __int_compare(nullptr, 0, s2, size2);
+            } else {
+                return __int_compare(d_->ptr_ + offset_, len_, s2, size2);
+            }
         }
 
     public:
@@ -156,6 +175,32 @@ namespace mg {
         size_type size() const
         {
             return len_;
+        }
+
+        int compare(const_pointer other) const
+        {
+            return __int_compare(other, __int_strlen(other));
+        }
+
+        int compare(const_pointer other, size_type other_size) const
+        {
+            return __int_compare(other, other_size);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        int compare(const std::basic_string<value_type, _OTraits, _OAlloc>& string) const
+        {
+            return __int_compare(string.data(), string.size());
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        int compare(const basic_stringref<value_type, _OTraits, _OAlloc>& other) const
+        {
+            if (nullptr == other.d_) {
+                return __int_compare(nullptr, 0);
+            } else {
+                return __int_compare(other.d_->ptr_ + other.offset_, other.len_);
+            }
         }
 
     private:

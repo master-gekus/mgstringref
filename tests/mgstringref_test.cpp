@@ -331,3 +331,95 @@ TEST_F(CustomAllocator, MoveConstrutionFromStdString)
     EXPECT_TRUE(s4.empty());
     EXPECT_TRUE(ws4.empty());
 }
+
+TEST_F(StandardAllocator, CompareEmpty)
+{
+    using namespace mg;
+    stringref s;
+    wstringref ws;
+    stringref empty;
+    wstringref wempty;
+    stringref letter("a");
+    wstringref wletter(L"a");
+
+    EXPECT_EQ(s.compare(nullptr), 0);
+    EXPECT_EQ(ws.compare(nullptr), 0);
+    EXPECT_EQ(s.compare(""), 0);
+    EXPECT_EQ(ws.compare(L""), 0);
+    EXPECT_LT(s.compare("a"), 0);
+    EXPECT_LT(ws.compare(L"a"), 0);
+    EXPECT_EQ(s.compare(std::string{}), 0);
+    EXPECT_EQ(ws.compare(std::wstring{}), 0);
+    EXPECT_LT(s.compare(std::string("a")), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a")), 0);
+    EXPECT_LT(s.compare(std::string("\0", 1)), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a", 2)), 0);
+    EXPECT_EQ(s.compare(empty), 0);
+    EXPECT_EQ(ws.compare(wempty), 0);
+    EXPECT_LT(s.compare(letter), 0);
+    EXPECT_LT(ws.compare(wletter), 0);
+}
+
+TEST_F(CustomAllocator, CompareEmpty)
+{
+    using namespace inplace;
+    stringref s(a);
+    wstringref ws(a);
+    stringref empty(a);
+    wstringref wempty(a);
+    stringref letter("a", a);
+    wstringref wletter(L"a", a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+    EXPECT_EQ(s.compare(nullptr), 0);
+    EXPECT_EQ(ws.compare(nullptr), 0);
+    EXPECT_EQ(s.compare(""), 0);
+    EXPECT_EQ(ws.compare(L""), 0);
+    EXPECT_LT(s.compare("a"), 0);
+    EXPECT_LT(ws.compare(L"a"), 0);
+    EXPECT_EQ(s.compare(std::string{}), 0);
+    EXPECT_EQ(ws.compare(std::wstring{}), 0);
+    EXPECT_LT(s.compare(std::string("a")), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a")), 0);
+    EXPECT_LT(s.compare(std::string("\0", 1)), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a", 2)), 0);
+    EXPECT_EQ(s.compare(empty), 0);
+    EXPECT_EQ(ws.compare(wempty), 0);
+    EXPECT_LT(s.compare(letter), 0);
+    EXPECT_LT(ws.compare(wletter), 0);
+}
+
+TEST_F(CustomAllocator, CompareFullRef)
+{
+    using namespace inplace;
+    stringref s("ccc", a);
+    wstringref ws(L"ccc", a);
+    stringref empty(a);
+    wstringref wempty(a);
+    stringref less1("aaa", a);
+    stringref less2("cc", a);
+    stringref greater1("ddd", a);
+    stringref greater2("cccc", a);
+    wstringref wless1("aaa", a);
+    wstringref wless2("cc", a);
+    wstringref wgreater1("ddd", a);
+    wstringref wgreater2("cccc", a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+    EXPECT_EQ(s.compare(nullptr), 0);
+    EXPECT_EQ(ws.compare(nullptr), 0);
+    EXPECT_EQ(s.compare(""), 0);
+    EXPECT_EQ(ws.compare(L""), 0);
+    EXPECT_LT(s.compare("a"), 0);
+    EXPECT_LT(ws.compare(L"a"), 0);
+    EXPECT_EQ(s.compare(std::string{}), 0);
+    EXPECT_EQ(ws.compare(std::wstring{}), 0);
+    EXPECT_LT(s.compare(std::string("a")), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a")), 0);
+    EXPECT_LT(s.compare(std::string("\0", 1)), 0);
+    EXPECT_LT(ws.compare(std::wstring(L"a", 2)), 0);
+    EXPECT_EQ(s.compare(empty), 0);
+    EXPECT_EQ(ws.compare(wempty), 0);
+    EXPECT_LT(s.compare(letter), 0);
+    EXPECT_LT(ws.compare(wletter), 0);
+}
