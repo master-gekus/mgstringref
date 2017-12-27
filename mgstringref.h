@@ -257,42 +257,61 @@ namespace mg {
         size_type len_ = 0;
     };
 
+    template <typename T>
+    struct is_stringref
+    {
+        static constexpr bool value = false;
+    };
+
+    template<typename _CharT, typename _Traits, typename _Alloc>
+    struct is_stringref<basic_stringref<_CharT, _Traits, _Alloc> >
+    {
+        static constexpr bool value = true;
+    };
+
     typedef basic_stringref<char> stringref;
     typedef basic_stringref<char16_t> ustringref;
     typedef basic_stringref<wchar_t> wstringref;
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator < (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator < (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 < s2.compare(s1));
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator <= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator <= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 <= s2.compare(s1));
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator > (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator > (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 > s2.compare(s1));
 }
+
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator >= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator >= (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 >= s2.compare(s1));
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator == (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator == (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 == s2.compare(s1));
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
-inline bool operator != (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
+typename std::enable_if<!mg::is_stringref<T>::value, bool>::type
+inline operator != (T s1, const mg::basic_stringref<_CharT, _Traits, _Alloc>& s2)
 {
     return (0 != s2.compare(s1));
 }
