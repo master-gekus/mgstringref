@@ -680,3 +680,44 @@ TEST_F(CustomAllocator, CompareOperators)
     EXPECT_TRUE(mg::wstringref(L"ccc") == ws);
 }
 
+TEST_F(CustomAllocator, CopyConstruction)
+{
+    using namespace inplace;
+    stringref sref("ccc", a);
+    wstringref wsref(L"ccc", a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+
+    stringref sref_copy1(sref);
+    wstringref wsref_copy1(wsref);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(sref_copy1, "ccc");
+    EXPECT_EQ(wsref_copy1, L"ccc");
+
+    stringref sref_copy2(sref, 1, 1, a);
+    wstringref wsref_copy2(wsref, 1, 1, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(sref_copy2, "c");
+    EXPECT_EQ(wsref_copy2, L"c");
+
+    stringref scopy(std::string("ccc"), a);
+    wstringref wscopy(std::wstring(L"ccc"), a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+    stringref scopy_copy1(scopy);
+    wstringref wscopy_copy1(wscopy);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(scopy_copy1, "ccc");
+    EXPECT_EQ(wscopy_copy1, L"ccc");
+
+    stringref scopy_copy2(scopy, 1, 1, a);
+    wstringref wscopy_copy2(wscopy, 1, 1, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(scopy_copy2, "c");
+    EXPECT_EQ(wscopy_copy2, L"c");
+
+    mg::stringref scopy_copy3(scopy, 1, 1);
+    mg::wstringref wscopy_copy3(wscopy, 1, 1);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(scopy_copy3, "c");
+    EXPECT_EQ(wscopy_copy3, L"c");
+}

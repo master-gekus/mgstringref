@@ -162,6 +162,34 @@ namespace mg {
                                         &basic_stringref::__int_construct_copy);
         }
 
+        basic_stringref(const basic_stringref& other) :
+            a_(other.a_), d_(other.d_), ptr_(other.ptr_), total_len_(other.total_len_), offset_(other.offset_),
+            len_(other.len_)
+        {
+            if (d_) {
+                ++(d_->ref_);
+            }
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        explicit basic_stringref(const basic_stringref<value_type, _OTraits, _OAlloc>& string,
+                                 const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            auto length = string.size();
+            __int_construct_with_offset(string.data(), length, 0, length,
+                                        &basic_stringref::__int_construct_ref);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref(const basic_stringref<value_type, _OTraits, _OAlloc>& string, size_type offset,
+                        size_type length, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct_with_offset(string.data(), string.size(), offset, length,
+                                        &basic_stringref::__int_construct_ref);
+        }
+
         ~basic_stringref()
         {
             __int_release_data(d_);
