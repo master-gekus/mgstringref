@@ -33,41 +33,22 @@ namespace mg {
         static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
         static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);
 
-        static size_type __int_strlen(const_pointer string)
+        void __int_construct(const_pointer string, size_type size, size_type offset, size_type length, bool detach)
         {
-            return (nullptr == string) ? 0 : _Traits::length(string);
-        }
-
-        void __int_construct_ref(const_pointer string, size_type size)
-        {
-            if ((nullptr == string) || (0 == size)) {
+            if ((nullptr == string) || (offset >= size)) {
                 return;
             }
-            ptr_ = string;
+            if (detach) {
+                pointer data = _Alloc_traits::allocate(a_, _Data_Header_Len + size);
+                d_ = new(data) _Data(1, size);
+                ptr_ = data + _Data_Header_Len;
+                _Traits::copy(data + _Data_Header_Len, string, size);
+            } else {
+                ptr_ = string;
+            }
             total_len_ = size;
-        }
-
-        void __int_construct_copy(const_pointer string, size_type size)
-        {
-            if ((nullptr == string) || (0 == size)) {
-                return;
-            }
-            pointer data = _Alloc_traits::allocate(a_, _Data_Header_Len + size);
-            d_ = new(data) _Data(1, size);
-            ptr_ = data + _Data_Header_Len;
-            total_len_ = size;
-            _Traits::copy(data + _Data_Header_Len, string, size);
-        }
-
-        void __int_construct_with_offset(const_pointer string, size_type size, size_type offset, size_type length,
-                                        void (basic_stringref::*constructor)(const_pointer string, size_type size))
-        {
-            if (offset >= size) {
-                return;
-            }
-            (this->*constructor)(string, size);
             offset_ = offset;
-            len_ = ((offset + length) > size) ? (size - offset) : length;
+            len_ = std::min(size - offset, length);
         }
 
         void __int_release_data(_Data*& d)
@@ -77,6 +58,11 @@ namespace mg {
                 _Alloc_traits::deallocate(a_, reinterpret_cast<pointer>(d), d->allocated_ + _Data_Header_Len);
             }
             d = nullptr;
+        }
+
+        static size_type __int_strlen(const_pointer string)
+        {
+            return (nullptr == string) ? 0 : _Traits::length(string);
         }
 
         static int __int_compare(const_pointer s1, size_type size1, const_pointer s2, size_t size2)
@@ -98,30 +84,26 @@ namespace mg {
             a_(a)
         {
             size_type size = __int_strlen(string);
-            __int_construct_with_offset(string, size, 0, size,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string, size, 0, size, false);
         }
 
         basic_stringref(const_pointer string, size_type size, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string, size, 0, size,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string, size, 0, size, false);
         }
 
         basic_stringref(const_pointer string, size_type offset, size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string, __int_strlen(string), offset, length,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string, __int_strlen(string), offset, length, false);
         }
 
         basic_stringref(const_pointer string, size_type size, size_type offset, size_type length,
                         const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string, size, offset, length,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string, size, offset, length, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -130,8 +112,7 @@ namespace mg {
             a_(a)
         {
             size_type size = string.size();
-            __int_construct_with_offset(string.data(), size, 0, size,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string.data(), size, 0, size, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -139,8 +120,7 @@ namespace mg {
                         size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string.data(), string.size(), offset, length,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string.data(), string.size(), offset, length, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -149,8 +129,7 @@ namespace mg {
             a_(a)
         {
             size_type size = string.size();
-            __int_construct_with_offset(string.data(), size, 0, size,
-                                        &basic_stringref::__int_construct_copy);
+            __int_construct(string.data(), size, 0, size, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -158,8 +137,7 @@ namespace mg {
                         const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string.data(), string.size(), offset, length,
-                                        &basic_stringref::__int_construct_copy);
+            __int_construct(string.data(), string.size(), offset, length, true);
         }
 
         basic_stringref(const basic_stringref& other) :
@@ -177,8 +155,7 @@ namespace mg {
             a_(a)
         {
             auto length = string.size();
-            __int_construct_with_offset(string.data(), length, 0, length,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string.data(), length, 0, length, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -186,8 +163,7 @@ namespace mg {
                         size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct_with_offset(string.data(), string.size(), offset, length,
-                                        &basic_stringref::__int_construct_ref);
+            __int_construct(string.data(), string.size(), offset, length, false);
         }
 
         ~basic_stringref()
