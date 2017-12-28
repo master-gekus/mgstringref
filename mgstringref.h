@@ -1,5 +1,6 @@
 #include <atomic>
 #include <string>
+#include <limits>
 
 namespace mg {
     template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
@@ -20,6 +21,8 @@ namespace mg {
         typedef value_type const&                       const_reference;
         typedef typename _Alloc_traits::pointer         pointer;
         typedef typename _Alloc_traits::const_pointer   const_pointer;
+
+        static constexpr const size_type npos = std::numeric_limits<size_type>::max();
 
     private:
         struct _Data {
@@ -48,6 +51,8 @@ namespace mg {
             }
             total_len_ = size;
             offset_ = offset;
+
+            // If lenght == npos, we will use size - offset, because npos is maximum value of size_type
             len_ = std::min(size - offset, length);
         }
 
@@ -83,8 +88,7 @@ namespace mg {
         explicit basic_stringref(const_pointer string, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            size_type size = __int_strlen(string);
-            __int_construct(string, size, 0, size, false);
+            __int_construct(string, __int_strlen(string), 0, npos, false);
         }
 
         basic_stringref(const_pointer string, size_type size, const _Alloc& a = _Alloc()) :
@@ -111,8 +115,7 @@ namespace mg {
                                  const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            size_type size = string.size();
-            __int_construct(string.data(), size, 0, size, false);
+            __int_construct(string.data(), string.size(), 0, npos, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -128,8 +131,7 @@ namespace mg {
                                  const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            size_type size = string.size();
-            __int_construct(string.data(), size, 0, size, true);
+            __int_construct(string.data(), string.size(), 0, npos, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -154,8 +156,7 @@ namespace mg {
                                  const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            auto length = string.size();
-            __int_construct(string.data(), length, 0, length, false);
+            __int_construct(string.data(), string.size(), 0, npos, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
