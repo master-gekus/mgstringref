@@ -105,6 +105,9 @@ namespace inplace {
     typedef mg::basic_stringref<wchar_t, std::char_traits<wchar_t>, allocator<wchar_t> > wstringref;
 }
 
+static_assert(mg::stringref::allocator_is_always_equal, "Invalid std:allocator.");
+static_assert(!inplace::stringref::allocator_is_always_equal, "Invalid inplace:allocator.");
+
 class StandardAllocator : public ::testing::Test
 {
 protected:

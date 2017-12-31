@@ -11,6 +11,19 @@ namespace mg {
             rebind_alloc<_CharT> _Char_alloc_type;
         typedef std::allocator_traits<_Char_alloc_type> _Alloc_traits;
 
+        template<class T>
+        struct __int_void
+        { typedef void type; };
+
+        template<class T, class U = void>
+        struct __int_is_always_equal
+        { static constexpr const bool value = std::is_empty<T>::value; };
+
+        template<class T>
+        struct __int_is_always_equal<T,
+                typename __int_void<typename std::allocator_traits<typename T::is_always_equal> >::type>
+        { static constexpr const bool value = T::is_always_equal::value; };
+
     public:
         typedef _Traits                                 traits_type;
         typedef typename _Traits::char_type             value_type;
@@ -23,6 +36,7 @@ namespace mg {
         typedef typename _Alloc_traits::const_pointer   const_pointer;
 
         static constexpr const size_type npos = std::numeric_limits<size_type>::max();
+        static constexpr const bool allocator_is_always_equal = __int_is_always_equal<_Alloc>::value;
 
     private:
         struct _Data {
