@@ -78,6 +78,16 @@ namespace inplace {
             (*header) = 0;
         }
 
+        bool operator ==(const allocator& other) const
+        {
+            return buffer_ == other.buffer_;
+        }
+
+        bool operator !=(const allocator& other) const
+        {
+            return buffer_ != other.buffer_;
+        }
+
         size_t used_block_count()
         {
             size_t count = 0;
@@ -118,16 +128,19 @@ class CustomAllocator : public ::testing::Test
 {
 public:
     CustomAllocator() :
-        a(buf, sizeof(buf))
+        a(buf, sizeof(buf)), a2(buf2, sizeof(buf2))
     {}
 
 protected:
     char buf[4096 * 100];
+    char buf2[4096 * 100];
     ::inplace::allocator<char> a;
+    ::inplace::allocator<char> a2;
 
     void TearDown() override
     {
         EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+        EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
     }
 
     void CompareTest(const inplace::stringref& s, const inplace::wstringref& ws);
@@ -143,6 +156,11 @@ TEST_F(CustomAllocator, StandardContainers)
     delete s;
     EXPECT_EQ(s1, s2);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+    string s3(s1, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_STREQ(s3.c_str(), "String must be lenght enough to allocated memory.");
 
     std::map<string, string, std::less<string>, allocator<std::map<string, string>::value_type> > m(a);
     m.emplace(string("String must be lenght enough to allocated memory.", a),
