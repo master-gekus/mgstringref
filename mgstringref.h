@@ -179,6 +179,27 @@ namespace mg {
             __int_construct(string.data(), string.size(), offset, length, false);
         }
 
+        basic_stringref(basic_stringref&& other) :
+            a_(other.a_), d_(other.d_), ptr_(other.ptr_), len_(other.len_)
+        {
+            other.d_ = nullptr;
+            other.ptr_ = nullptr;
+            other.len_ = 0;
+        }
+
+        basic_stringref(basic_stringref&& other, size_type offset, size_type length) :
+            a_(other.a_)
+        {
+            if ((offset < other.len_) && (0 != length)) {
+                d_ = other.d_;
+                ptr_ = other.ptr_ + offset;
+                len_ = std::min(length, other.len_ - offset);
+            }
+            other.d_ = nullptr;
+            other.ptr_ = nullptr;
+            other.len_ = 0;
+        }
+
         ~basic_stringref()
         {
             __int_release_data(d_);

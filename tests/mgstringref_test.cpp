@@ -785,3 +785,66 @@ TEST_F(CustomAllocator, CopyConstructionWithOffsetAndLenght)
     EXPECT_EQ(s1, "string");
     EXPECT_EQ(ws1, L"string");
 }
+
+TEST_F(StandardAllocator, MoveConstruction)
+{
+    using namespace mg;
+    stringref s1(stringref("Test string"));
+    wstringref ws1(wstringref(L"Test string"));
+    EXPECT_EQ(s1, "Test string");
+    EXPECT_EQ(ws1, L"Test string");
+
+    stringref s2(stringref(std::string("Test string")));
+    wstringref ws2(wstringref(std::wstring(L"Test string")));
+    EXPECT_EQ(s2, "Test string");
+    EXPECT_EQ(ws2, L"Test string");
+
+    stringref s3(stringref("Test string"), 5, 6);
+    wstringref ws3(wstringref(L"Test string"), 5, 6);
+    EXPECT_EQ(s3, "string");
+    EXPECT_EQ(ws3, L"string");
+
+    stringref s4(stringref("Test string"), 5, 0);
+    wstringref ws4(wstringref(L"Test string"), 5, 0);
+    EXPECT_EQ(s4, "");
+    EXPECT_EQ(ws4, L"");
+
+    stringref s5(stringref(std::string("Test string")), 5, 6);
+    wstringref ws5(wstringref(std::wstring(L"Test string")), 5, 6);
+    EXPECT_EQ(s5, "string");
+    EXPECT_EQ(ws5, L"string");
+}
+
+TEST_F(CustomAllocator, MoveConstruction)
+{
+    using namespace inplace;
+    stringref s1(stringref("Test string", a));
+    wstringref ws1(wstringref(L"Test string", a));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s1, "Test string");
+    EXPECT_EQ(ws1, L"Test string");
+
+    stringref s2(stringref(std::string("Test string"), a));
+    wstringref ws2(wstringref(std::wstring(L"Test string"), a));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s2, "Test string");
+    EXPECT_EQ(ws2, L"Test string");
+
+    stringref s3(stringref("Test string", a), 5, 6);
+    wstringref ws3(wstringref(L"Test string", a), 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s3, "string");
+    EXPECT_EQ(ws3, L"string");
+
+    stringref s4(stringref("Test string", a), 5, 0);
+    wstringref ws4(wstringref(L"Test string", a), 5, 0);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s4, "");
+    EXPECT_EQ(ws4, L"");
+
+    stringref s5(stringref(std::string("Test string"), a), 5, 6);
+    wstringref ws5(wstringref(std::wstring(L"Test string"), a), 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(s5, "string");
+    EXPECT_EQ(ws5, L"string");
+}
