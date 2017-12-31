@@ -721,3 +721,67 @@ TEST_F(CustomAllocator, CopyConstruction)
     EXPECT_EQ(scopy_copy3, "c");
     EXPECT_EQ(wscopy_copy3, L"c");
 }
+
+TEST_F(StandardAllocator, CopyConstructionWithOffsetAndLenght)
+{
+    using namespace mg;
+    {
+        stringref s(std::string("Test string"));
+        wstringref ws(std::wstring(L"Test string"));
+
+        stringref s1(s, 5, 6);
+        wstringref ws1(ws, 5, 6);
+        EXPECT_EQ(s1, "string");
+        EXPECT_EQ(ws1, L"string");
+
+        stringref s2(s, 5, 0);
+        wstringref ws2(ws, 5, 0);
+        EXPECT_TRUE(s2.empty());
+        EXPECT_TRUE(ws2.empty());
+    }
+
+    stringref *s = new stringref(std::string("Test string"));
+    wstringref *ws = new wstringref(std::wstring(L"Test string"));
+    stringref s1(*s, 5, 6);
+    wstringref ws1(*ws, 5, 6);
+    delete s;
+    delete ws;
+    EXPECT_EQ(s1, "string");
+    EXPECT_EQ(ws1, L"string");
+}
+
+TEST_F(CustomAllocator, CopyConstructionWithOffsetAndLenght)
+{
+    using namespace inplace;
+    {
+        stringref s(std::string("Test string"), a);
+        wstringref ws(std::wstring(L"Test string"), a);
+        EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+        stringref s1(s, 5, 6);
+        wstringref ws1(ws, 5, 6);
+        EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+        EXPECT_EQ(s1, "string");
+        EXPECT_EQ(ws1, L"string");
+
+        stringref s2(s, 5, 0);
+        wstringref ws2(ws, 5, 0);
+        EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+        EXPECT_TRUE(s2.empty());
+        EXPECT_TRUE(ws2.empty());
+    }
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+
+    stringref *s = new stringref(std::string("Test string"), a);
+    wstringref *ws = new wstringref(std::wstring(L"Test string"), a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+
+    stringref s1(*s, 5, 6);
+    wstringref ws1(*ws, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    delete s;
+    delete ws;
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s1, "string");
+    EXPECT_EQ(ws1, L"string");
+}

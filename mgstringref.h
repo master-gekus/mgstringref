@@ -149,6 +149,20 @@ namespace mg {
             }
         }
 
+        basic_stringref(const basic_stringref& other, size_type offset, size_type length) :
+            a_(other.a_)
+        {
+            if ((offset >= other.len_) || (0 == length)) {
+                return;
+            }
+            if (other.d_) {
+                d_ = other.d_;
+                ++(d_->ref_);
+            }
+            ptr_ = other.ptr_ + offset;
+            len_ = std::min(length, other.len_ - offset);
+        }
+
         template<typename _OTraits, typename _OAlloc>
         explicit basic_stringref(const basic_stringref<value_type, _OTraits, _OAlloc>& string,
                                  const _Alloc& a = _Alloc()) :
