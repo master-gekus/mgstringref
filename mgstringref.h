@@ -74,6 +74,23 @@ namespace mg {
             len_ = std::min(size, length);
         }
 
+        void __int_copy_construct(const basic_stringref& other, size_type offset, size_type length)
+        {
+            if ((offset >= other.len_) || (0 == length)) {
+                return;
+            }
+            if (other.d_) {
+                if ((!allocator_is_always_equal) && (a_ != other.a_)) {
+                    __int_construct(other.ptr_, other.len_, offset, length, true);
+                    return;
+                }
+                d_ = other.d_;
+                ++(d_->ref_);
+            }
+            ptr_ = other.ptr_ + offset;
+            len_ = std::min(length, other.len_ - offset);
+        }
+
         void __int_release_data(_Data*& d)
         {
             if (d && (0 == (--d->ref_))) {
@@ -161,25 +178,15 @@ namespace mg {
         }
 
         basic_stringref(const basic_stringref& other) :
-            a_(other.a_), d_(other.d_), ptr_(other.ptr_), len_(other.len_)
+            a_(_Alloc_traits::select_on_container_copy_construction(other.a_))
         {
-            if (d_) {
-                ++(d_->ref_);
-            }
+            __int_copy_construct(other, 0, other.len_);
         }
 
         basic_stringref(const basic_stringref& other, size_type offset, size_type length) :
-            a_(other.a_)
+            a_(_Alloc_traits::select_on_container_copy_construction(other.a_))
         {
-            if ((offset >= other.len_) || (0 == length)) {
-                return;
-            }
-            if (other.d_) {
-                d_ = other.d_;
-                ++(d_->ref_);
-            }
-            ptr_ = other.ptr_ + offset;
-            len_ = std::min(length, other.len_ - offset);
+            __int_copy_construct(other, offset, length);
         }
 
         template<typename _OTraits, typename _OAlloc>
