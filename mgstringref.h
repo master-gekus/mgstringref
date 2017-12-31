@@ -49,8 +49,7 @@ namespace mg {
             } else {
                 ptr_ = string;
             }
-            total_len_ = size;
-            offset_ = offset;
+            ptr_ += offset;
 
             // If lenght == npos, we will use size - offset, because npos is maximum value of size_type
             len_ = std::min(size - offset, length);
@@ -143,7 +142,7 @@ namespace mg {
         }
 
         basic_stringref(const basic_stringref& other) :
-            a_(other.a_), d_(other.d_), ptr_(other.ptr_), total_len_(other.total_len_), offset_(other.offset_),
+            a_(other.a_), d_(other.d_), ptr_(other.ptr_),
             len_(other.len_)
         {
             if (d_) {
@@ -184,23 +183,23 @@ namespace mg {
 
         const_pointer data() const
         {
-            return ptr_ + offset_;
+            return ptr_;
         }
 
         int compare(const_pointer other) const
         {
-            return __int_compare(ptr_ + offset_, len_, other, __int_strlen(other));
+            return __int_compare(ptr_, len_, other, __int_strlen(other));
         }
 
         int compare(const_pointer other, size_type other_size) const
         {
-            return __int_compare(ptr_ + offset_, len_, other, other_size);
+            return __int_compare(ptr_, len_, other, other_size);
         }
 
         template<typename _OTraits, typename _OAlloc>
         int compare(const std::basic_string<value_type, _OTraits, _OAlloc>& string) const
         {
-            return __int_compare(ptr_ + offset_, len_, string.data(), string.size());
+            return __int_compare(ptr_, len_, string.data(), string.size());
         }
 
         int compare(const basic_stringref& other) const
@@ -208,13 +207,13 @@ namespace mg {
             if (this == &other) {
                 return 0;
             }
-            return __int_compare(ptr_ + offset_, len_, other.ptr_ + other.offset_, other.len_);
+            return __int_compare(ptr_, len_, other.ptr_, other.len_);
         }
 
         template<typename _OTraits, typename _OAlloc>
         int compare(const basic_stringref<value_type, _OTraits, _OAlloc>& other) const
         {
-            return __int_compare(ptr_ + offset_, len_, other.data(), other.size());
+            return __int_compare(ptr_, len_, other.data(), other.size());
         }
 
         template<typename T>
@@ -257,8 +256,6 @@ namespace mg {
         _Char_alloc_type a_;
         _Data *d_ = nullptr;
         const_pointer ptr_ = nullptr;
-        size_type total_len_ = 0;
-        size_type offset_ = 0;
         size_type len_ = 0;
     };
 
