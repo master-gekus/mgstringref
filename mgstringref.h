@@ -38,7 +38,7 @@ namespace mg {
 
         void __int_construct(const_pointer string, size_type size, size_type offset, size_type length, bool detach)
         {
-            if ((nullptr == string) || (offset >= size)) {
+            if ((nullptr == string) || (offset >= size) || (0 == length)) {
                 return;
             }
             if (detach) {
@@ -142,8 +142,7 @@ namespace mg {
         }
 
         basic_stringref(const basic_stringref& other) :
-            a_(other.a_), d_(other.d_), ptr_(other.ptr_),
-            len_(other.len_)
+            a_(other.a_), d_(other.d_), ptr_(other.ptr_), len_(other.len_)
         {
             if (d_) {
                 ++(d_->ref_);
