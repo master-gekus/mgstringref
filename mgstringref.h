@@ -41,6 +41,12 @@ namespace mg {
             if ((nullptr == string) || (offset >= size) || (0 == length)) {
                 return;
             }
+
+            if (0 != offset) {
+                string += offset;
+                size -= offset;
+            }
+
             if (detach) {
                 pointer data = _Alloc_traits::allocate(a_, _Data_Header_Len + size);
                 d_ = new(data) _Data(1, size);
@@ -49,10 +55,9 @@ namespace mg {
             } else {
                 ptr_ = string;
             }
-            ptr_ += offset;
 
             // If lenght == npos, we will use size - offset, because npos is maximum value of size_type
-            len_ = std::min(size - offset, length);
+            len_ = std::min(size, length);
         }
 
         void __int_release_data(_Data*& d)
