@@ -1065,3 +1065,195 @@ TEST_F(CustomAllocator, Detach)
     EXPECT_EQ(ws2, L"Test");
     EXPECT_EQ(ws3, L"String");
 }
+
+TEST_F(StandardAllocator, AssingFromOthers)
+{
+    char str[] = "Test string";
+    wchar_t wstr[] = L"Test string";
+    std::string sstr("Test string");
+    std::wstring wsstr(L"Test string");
+
+    using namespace mg;
+    stringref s;
+    wstringref ws;
+
+    s.assign(str);
+    ws.assign(wstr);
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(str, stringref::detached);
+    ws.assign(wstr, wstringref::detached);
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(str, 4);
+    ws.assign(wstr, 4);
+    EXPECT_EQ(s, "Test");
+    EXPECT_EQ(ws, L"Test");
+
+    s.assign(str, 4, stringref::detached);
+    ws.assign(wstr, 4, stringref::detached);
+    EXPECT_EQ(s, "Test");
+    EXPECT_EQ(ws, L"Test");
+
+    s.assign(str, 5, 6);
+    ws.assign(wstr, 5, 6);
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(str, 5, 6, stringref::detached);
+    ws.assign(wstr, 5, 6, stringref::detached);
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(str, 4, 1, 10);
+    ws.assign(wstr, 4, 1, 10);
+    EXPECT_EQ(s, "est");
+    EXPECT_EQ(ws, L"est");
+
+    s.assign(str, 4, 1, 10, stringref::detached);
+    ws.assign(wstr, 4, 1, 10, wstringref::detached);
+    EXPECT_EQ(s, "est");
+    EXPECT_EQ(ws, L"est");
+
+    s.assign(sstr);
+    ws.assign(wsstr);
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(sstr, stringref::detached);
+    ws.assign(wsstr, wstringref::detached);
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(sstr, 5, 6);
+    ws.assign(wsstr, 5, 6);
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(sstr, 5, 6, stringref::detached);
+    ws.assign(wsstr, 5, 6, stringref::detached);
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(std::string("Test string"));
+    ws.assign(std::wstring(L"Test string"));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(std::string("Test string"), 5, 6);
+    ws.assign(std::wstring(L"Test string"), 5, 6);
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+}
+
+TEST_F(CustomAllocator, AssingFromOthers)
+{
+    char str[] = "Test string";
+    wchar_t wstr[] = L"Test string";
+    std::string sstr("Test string");
+    std::wstring wsstr(L"Test string");
+
+    using namespace inplace;
+    stringref s(a);
+    wstringref ws(a2);
+
+    s.assign(str);
+    ws.assign(wstr);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(str, stringref::detached);
+    ws.assign(wstr, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(str, 4);
+    ws.assign(wstr, 4);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "Test");
+    EXPECT_EQ(ws, L"Test");
+
+    s.assign(str, 4, stringref::detached);
+    ws.assign(wstr, 4, stringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "Test");
+    EXPECT_EQ(ws, L"Test");
+
+    s.assign(str, 5, 6);
+    ws.assign(wstr, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(str, 5, 6, stringref::detached);
+    ws.assign(wstr, 5, 6, stringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(str, 4, 1, 10);
+    ws.assign(wstr, 4, 1, 10);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "est");
+    EXPECT_EQ(ws, L"est");
+
+    s.assign(str, 4, 1, 10, stringref::detached);
+    ws.assign(wstr, 4, 1, 10, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "est");
+    EXPECT_EQ(ws, L"est");
+
+    s.assign(sstr);
+    ws.assign(wsstr);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(sstr, stringref::detached);
+    ws.assign(wsstr, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(sstr, 5, 6);
+    ws.assign(wsstr, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(sstr, 5, 6, stringref::detached);
+    ws.assign(wsstr, 5, 6, stringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+
+    s.assign(std::string("Test string"));
+    ws.assign(std::wstring(L"Test string"));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "Test string");
+    EXPECT_EQ(ws, L"Test string");
+
+    s.assign(std::string("Test string"), 5, 6);
+    ws.assign(std::wstring(L"Test string"), 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s, "string");
+    EXPECT_EQ(ws, L"string");
+}

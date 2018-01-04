@@ -273,6 +273,114 @@ namespace mg {
             __int_release_data(d_);
         }
 
+        basic_stringref& assign(const_pointer string)
+        {
+            __int_release_data(d_);
+            __int_construct(string, __int_strlen(string), 0, npos, false);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string, __int_strlen(string), 0, npos, true);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type size)
+        {
+            __int_release_data(d_);
+            __int_construct(string, size, 0, npos, false);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type size, std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string, size, 0, npos, true);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type offset, size_type length)
+        {
+            __int_release_data(d_);
+            __int_construct(string, __int_strlen(string), offset, length, false);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type offset, size_type length, std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string, __int_strlen(string), offset, length, true);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length)
+        {
+            __int_release_data(d_);
+            __int_construct(string, size, offset, length, false);
+            return *this;
+        }
+
+        basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length,
+                                std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string, size, offset, length, true);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), 0, npos, false);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), 0, npos, true);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
+                                size_type length)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), offset, length, false);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
+                                size_type length, std::true_type)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), offset, length, true);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), 0, npos, true);
+            return *this;
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string, size_type offset,
+                                size_type length)
+        {
+            __int_release_data(d_);
+            __int_construct(string.data(), string.size(), offset, length, true);
+            return *this;
+        }
+
         bool empty() const
         {
             return (0 == len_);
