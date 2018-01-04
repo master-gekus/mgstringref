@@ -37,7 +37,7 @@ namespace mg {
 
         static constexpr const size_type npos = std::numeric_limits<size_type>::max();
         static constexpr const bool allocator_is_always_equal = __int_is_always_equal<_Alloc>::value;
-        static constexpr const std::true_type detach{};
+        static constexpr const std::true_type detached{};
 
     private:
         struct _Data {
@@ -236,7 +236,7 @@ namespace mg {
                                  const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct(string.data(), string.size(), 0, npos, string.detached());
+            __int_construct(string.data(), string.size(), 0, npos, string.is_detached());
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -244,7 +244,7 @@ namespace mg {
                         size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct(string.data(), string.size(), offset, length, string.detached());
+            __int_construct(string.data(), string.size(), offset, length, string.is_detached());
         }
 
         basic_stringref(basic_stringref&& other) :
@@ -288,7 +288,15 @@ namespace mg {
             return ptr_;
         }
 
-        bool detached() const
+        basic_stringref& detach()
+        {
+            if (nullptr == d_) {
+                __int_construct(ptr_, len_, 0, len_, true);
+            }
+            return *this;
+        }
+
+        bool is_detached() const
         {
             return (nullptr != d_);
         }

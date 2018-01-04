@@ -879,8 +879,8 @@ TEST_F(CustomAllocator, MoveConstruction)
 TEST_F(CustomAllocator, DetachedConstructors)
 {
     using namespace inplace;
-    stringref s1("Test string", stringref::detach, a);
-    wstringref ws1(L"Test string", wstringref::detach, a);
+    stringref s1("Test string", stringref::detached, a);
+    wstringref ws1(L"Test string", wstringref::detached, a);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
     EXPECT_EQ(s1, "Test string");
     EXPECT_EQ(ws1, L"Test string");
@@ -891,14 +891,14 @@ TEST_F(CustomAllocator, DetachedConstructors)
     EXPECT_EQ(s2, "Test string");
     EXPECT_EQ(ws2, L"Test string");
 
-    stringref s3("Test string", 4, stringref::detach, a);
-    wstringref ws3(L"Test string", 4, wstringref::detach, a);
+    stringref s3("Test string", 4, stringref::detached, a);
+    wstringref ws3(L"Test string", 4, wstringref::detached, a);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
     EXPECT_EQ(s3, "Test");
     EXPECT_EQ(ws3, L"Test");
 
-    stringref s4("Test string", 5, 6, stringref::detach, a);
-    wstringref ws4(L"Test string", 5, 6, wstringref::detach, a);
+    stringref s4("Test string", 5, 6, stringref::detached, a);
+    wstringref ws4(L"Test string", 5, 6, wstringref::detached, a);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
     EXPECT_EQ(s4, "string");
     EXPECT_EQ(ws4, L"string");
@@ -927,17 +927,141 @@ TEST_F(CustomAllocator, DetachedConstructors)
     EXPECT_EQ(s7, "Test string");
     EXPECT_EQ(ws7, L"Test string");
 
-    stringref s8(ss, stringref::detach, a2);
-    wstringref ws8(wss, wstringref::detach, a2);
+    stringref s8(ss, stringref::detached, a2);
+    wstringref ws8(wss, wstringref::detached, a2);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
     EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(4));
     EXPECT_EQ(s8, "Test string");
     EXPECT_EQ(ws8, L"Test string");
 
-    stringref s9(ss, 5, 6, stringref::detach, a2);
-    wstringref ws9(wss, 5, 6, wstringref::detach, a2);
+    stringref s9(ss, 5, 6, stringref::detached, a2);
+    wstringref ws9(wss, 5, 6, wstringref::detached, a2);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
     EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(6));
     EXPECT_EQ(s9, "string");
     EXPECT_EQ(ws9, L"string");
+}
+
+TEST_F(StandardAllocator, Detach)
+{
+    char str[] = "Test string";
+    wchar_t wstr[] = L"Test string";
+
+    using namespace mg;
+
+    stringref s1(str);
+    stringref s2(str, 4);
+    stringref s3(str, 5, 6);
+    wstringref ws1(wstr);
+    wstringref ws2(wstr, 4);
+    wstringref ws3(wstr, 5, 6);
+    EXPECT_EQ(s1, "Test string");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "string");
+    EXPECT_EQ(ws1, L"Test string");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"string");
+    EXPECT_FALSE(s1.is_detached());
+    EXPECT_FALSE(s2.is_detached());
+    EXPECT_FALSE(s3.is_detached());
+    EXPECT_FALSE(ws1.is_detached());
+    EXPECT_FALSE(ws2.is_detached());
+    EXPECT_FALSE(ws3.is_detached());
+
+    str[5] = 'S';
+    wstr[5] = L'S';
+    EXPECT_EQ(s1, "Test String");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "String");
+    EXPECT_EQ(ws1, L"Test String");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"String");
+    s1.detach();
+    s2.detach();
+    s3.detach();
+    ws1.detach();
+    ws2.detach();
+    ws3.detach();
+    EXPECT_TRUE(s1.is_detached());
+    EXPECT_TRUE(s2.is_detached());
+    EXPECT_TRUE(s3.is_detached());
+    EXPECT_TRUE(ws1.is_detached());
+    EXPECT_TRUE(ws2.is_detached());
+    EXPECT_TRUE(ws3.is_detached());
+
+    memset(str, 0, sizeof(str));
+    memset(wstr, 0, sizeof(wstr));
+    EXPECT_STREQ(str, "");
+    EXPECT_STREQ(wstr, L"");
+
+    EXPECT_EQ(s1, "Test String");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "String");
+    EXPECT_EQ(ws1, L"Test String");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"String");
+}
+
+TEST_F(CustomAllocator, Detach)
+{
+    char str[] = "Test string";
+    wchar_t wstr[] = L"Test string";
+
+    using namespace inplace;
+
+    stringref s1(str, a);
+    stringref s2(str, 4, a2);
+    stringref s3(str, 5, 6, a2);
+    wstringref ws1(wstr, a);
+    wstringref ws2(wstr, 4, a2);
+    wstringref ws3(wstr, 5, 6, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s1, "Test string");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "string");
+    EXPECT_EQ(ws1, L"Test string");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"string");
+    EXPECT_FALSE(s1.is_detached());
+    EXPECT_FALSE(s2.is_detached());
+    EXPECT_FALSE(s3.is_detached());
+    EXPECT_FALSE(ws1.is_detached());
+    EXPECT_FALSE(ws2.is_detached());
+    EXPECT_FALSE(ws3.is_detached());
+
+    str[5] = 'S';
+    wstr[5] = L'S';
+    EXPECT_EQ(s1, "Test String");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "String");
+    EXPECT_EQ(ws1, L"Test String");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"String");
+    s1.detach();
+    s2.detach();
+    s3.detach();
+    ws1.detach();
+    ws2.detach();
+    ws3.detach();
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_TRUE(s1.is_detached());
+    EXPECT_TRUE(s2.is_detached());
+    EXPECT_TRUE(s3.is_detached());
+    EXPECT_TRUE(ws1.is_detached());
+    EXPECT_TRUE(ws2.is_detached());
+    EXPECT_TRUE(ws3.is_detached());
+
+    memset(str, 0, sizeof(str));
+    memset(wstr, 0, sizeof(wstr));
+    EXPECT_STREQ(str, "");
+    EXPECT_STREQ(wstr, L"");
+
+    EXPECT_EQ(s1, "Test String");
+    EXPECT_EQ(s2, "Test");
+    EXPECT_EQ(s3, "String");
+    EXPECT_EQ(ws1, L"Test String");
+    EXPECT_EQ(ws2, L"Test");
+    EXPECT_EQ(ws3, L"String");
 }
