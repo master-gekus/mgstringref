@@ -37,6 +37,7 @@ namespace mg {
 
         static constexpr const size_type npos = std::numeric_limits<size_type>::max();
         static constexpr const bool allocator_is_always_equal = __int_is_always_equal<_Alloc>::value;
+        static constexpr const std::true_type detach{};
 
     private:
         struct _Data {
@@ -126,10 +127,22 @@ namespace mg {
             __int_construct(string, __int_strlen(string), 0, npos, false);
         }
 
+        basic_stringref(const_pointer string, std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string, __int_strlen(string), 0, npos, true);
+        }
+
         basic_stringref(const_pointer string, size_type size, const _Alloc& a = _Alloc()) :
             a_(a)
         {
             __int_construct(string, size, 0, size, false);
+        }
+
+        basic_stringref(const_pointer string, size_type size, std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string, size, 0, size, true);
         }
 
         basic_stringref(const_pointer string, size_type offset, size_type length, const _Alloc& a = _Alloc()) :
@@ -138,11 +151,24 @@ namespace mg {
             __int_construct(string, __int_strlen(string), offset, length, false);
         }
 
+        basic_stringref(const_pointer string, size_type offset, size_type length, std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string, __int_strlen(string), offset, length, true);
+        }
+
         basic_stringref(const_pointer string, size_type size, size_type offset, size_type length,
                         const _Alloc& a = _Alloc()) :
             a_(a)
         {
             __int_construct(string, size, offset, length, false);
+        }
+
+        basic_stringref(const_pointer string, size_type size, size_type offset, size_type length,
+                        std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string, size, offset, length, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -154,11 +180,27 @@ namespace mg {
         }
 
         template<typename _OTraits, typename _OAlloc>
+        explicit basic_stringref(const std::basic_string<value_type, _OTraits, _OAlloc>& string,
+                                 std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string.data(), string.size(), 0, npos, true);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
         basic_stringref(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
                         size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
             __int_construct(string.data(), string.size(), offset, length, false);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        basic_stringref(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
+                        size_type length, std::true_type, const _Alloc& a = _Alloc()) :
+            a_(a)
+        {
+            __int_construct(string.data(), string.size(), offset, length, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -194,7 +236,7 @@ namespace mg {
                                  const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct(string.data(), string.size(), 0, npos, false);
+            __int_construct(string.data(), string.size(), 0, npos, string.detached());
         }
 
         template<typename _OTraits, typename _OAlloc>
@@ -202,7 +244,7 @@ namespace mg {
                         size_type length, const _Alloc& a = _Alloc()) :
             a_(a)
         {
-            __int_construct(string.data(), string.size(), offset, length, false);
+            __int_construct(string.data(), string.size(), offset, length, string.detached());
         }
 
         basic_stringref(basic_stringref&& other) :
@@ -244,6 +286,11 @@ namespace mg {
         const_pointer data() const
         {
             return ptr_;
+        }
+
+        bool detached() const
+        {
+            return (nullptr != d_);
         }
 
         int compare(const_pointer other) const

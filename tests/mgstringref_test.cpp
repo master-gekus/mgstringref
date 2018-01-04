@@ -732,15 +732,21 @@ TEST_F(CustomAllocator, CopyConstruction)
 
     stringref scopy_copy2(scopy, 1, 1, a);
     wstringref wscopy_copy2(wscopy, 1, 1, a);
-    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
     EXPECT_EQ(scopy_copy2, "c");
     EXPECT_EQ(wscopy_copy2, L"c");
 
     mg::stringref scopy_copy3(scopy, 1, 1);
     mg::wstringref wscopy_copy3(wscopy, 1, 1);
-    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
     EXPECT_EQ(scopy_copy3, "c");
     EXPECT_EQ(wscopy_copy3, L"c");
+
+    stringref scopy_copy4(sref, 1, 1, a);
+    wstringref wscopy_copy4(wsref, 1, 1, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(scopy_copy4, "c");
+    EXPECT_EQ(wscopy_copy4, L"c");
 }
 
 TEST_F(StandardAllocator, CopyConstructionWithOffsetAndLenght)
@@ -868,4 +874,70 @@ TEST_F(CustomAllocator, MoveConstruction)
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
     EXPECT_EQ(s5, "string");
     EXPECT_EQ(ws5, L"string");
+}
+
+TEST_F(CustomAllocator, DetachedConstructors)
+{
+    using namespace inplace;
+    stringref s1("Test string", stringref::detach, a);
+    wstringref ws1(L"Test string", wstringref::detach, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s1, "Test string");
+    EXPECT_EQ(ws1, L"Test string");
+
+    stringref s2("Test string", a);
+    wstringref ws2(L"Test string", a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s2, "Test string");
+    EXPECT_EQ(ws2, L"Test string");
+
+    stringref s3("Test string", 4, stringref::detach, a);
+    wstringref ws3(L"Test string", 4, wstringref::detach, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(s3, "Test");
+    EXPECT_EQ(ws3, L"Test");
+
+    stringref s4("Test string", 5, 6, stringref::detach, a);
+    wstringref ws4(L"Test string", 5, 6, wstringref::detach, a);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(s4, "string");
+    EXPECT_EQ(ws4, L"string");
+
+    stringref s5(s1, a2);
+    wstringref ws5(ws1, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s5, "Test string");
+    EXPECT_EQ(ws5, L"Test string");
+
+    stringref s6(s2, a2);
+    wstringref ws6(ws2, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s6, "Test string");
+    EXPECT_EQ(ws6, L"Test string");
+
+    std::string ss("Test string");
+    std::wstring wss(L"Test string");
+
+    stringref s7(ss, a2);
+    wstringref ws7(wss, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(s7, "Test string");
+    EXPECT_EQ(ws7, L"Test string");
+
+    stringref s8(ss, stringref::detach, a2);
+    wstringref ws8(wss, wstringref::detach, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(4));
+    EXPECT_EQ(s8, "Test string");
+    EXPECT_EQ(ws8, L"Test string");
+
+    stringref s9(ss, 5, 6, stringref::detach, a2);
+    wstringref ws9(wss, 5, 6, wstringref::detach, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(6));
+    EXPECT_EQ(s9, "string");
+    EXPECT_EQ(ws9, L"string");
 }
