@@ -77,7 +77,9 @@ namespace mg {
             len_ = std::min(size, length);
         }
 
-        void __int_copy_construct(const basic_stringref& other, size_type offset, size_type length)
+        template<typename _OTraits>
+        void __int_copy_construct(const basic_stringref<value_type, _OTraits, _Alloc>& other, size_type offset,
+                                  size_type length)
         {
             if ((offset >= other.len_) || (0 == length)) {
                 return;
@@ -87,11 +89,25 @@ namespace mg {
                     __int_construct(other.ptr_, other.len_, offset, length, true);
                     return;
                 }
-                d_ = other.d_;
+                d_ = reinterpret_cast<_Data*>(other.d_);
                 ++(d_->ref_);
             }
             ptr_ = other.ptr_ + offset;
             len_ = std::min(length, other.len_ - offset);
+        }
+
+        template<typename _OTraits>
+        void __int_move_construct(basic_stringref<value_type, _OTraits, _Alloc>& other, size_type offset,
+                                  size_type length)
+        {
+            if ((offset < other.len_) && (0 != length)) {
+                d_ = reinterpret_cast<_Data*>(other.d_);
+                ptr_ = other.ptr_ + offset;
+                len_ = std::min(length, other.len_ - offset);
+            }
+            other.d_ = nullptr;
+            other.ptr_ = nullptr;
+            other.len_ = 0;
         }
 
         void __int_release_data(_Data*& d)
@@ -240,6 +256,21 @@ namespace mg {
             __int_copy_construct(other, offset, length);
         }
 
+        template<typename _OTraits>
+        explicit basic_stringref(const basic_stringref<value_type, _OTraits, _Alloc>& other) :
+            a_(_Alloc_traits::select_on_container_copy_construction(other.a_))
+        {
+            __int_copy_construct(other, 0, other.len_);
+        }
+
+        template<typename _OTraits>
+        basic_stringref(const basic_stringref<value_type, _OTraits, _Alloc>& other, size_type offset,
+                        size_type length) :
+            a_(_Alloc_traits::select_on_container_copy_construction(other.a_))
+        {
+            __int_copy_construct(other, offset, length);
+        }
+
         template<typename _OTraits, typename _OAlloc>
         explicit basic_stringref(const basic_stringref<value_type, _OTraits, _OAlloc>& string,
                                  const _Alloc& a = _Alloc()) :
@@ -257,24 +288,29 @@ namespace mg {
         }
 
         basic_stringref(basic_stringref&& other) :
-            a_(other.a_), d_(other.d_), ptr_(other.ptr_), len_(other.len_)
+            a_(other.a_)
         {
-            other.d_ = nullptr;
-            other.ptr_ = nullptr;
-            other.len_ = 0;
+            __int_move_construct(other, 0, other.len_);
         }
 
         basic_stringref(basic_stringref&& other, size_type offset, size_type length) :
             a_(other.a_)
         {
-            if ((offset < other.len_) && (0 != length)) {
-                d_ = other.d_;
-                ptr_ = other.ptr_ + offset;
-                len_ = std::min(length, other.len_ - offset);
-            }
-            other.d_ = nullptr;
-            other.ptr_ = nullptr;
-            other.len_ = 0;
+            __int_move_construct(other, offset, length);
+        }
+
+        template<typename _OTraits>
+        explicit basic_stringref(basic_stringref<value_type, _OTraits, _Alloc>&& other) :
+            a_(other.a_)
+        {
+            __int_move_construct(other, 0, other.len_);
+        }
+
+        template<typename _OTraits>
+        basic_stringref(basic_stringref<value_type, _OTraits, _Alloc>&& other, size_type offset, size_type length) :
+            a_(other.a_)
+        {
+            __int_move_construct(other, offset, length);
         }
 
         ~basic_stringref()
@@ -489,6 +525,9 @@ namespace mg {
         _Data *d_ = nullptr;
         const_pointer ptr_ = nullptr;
         size_type len_ = 0;
+
+        template<typename C, typename T, typename A>
+        friend class basic_stringref;
     };
 
     template <typename T>
@@ -609,6 +648,9 @@ namespace mg {
             return nullptr;
         }
     };
+
+    typedef basic_stringref<char, ci_char_traits<char> > cistringref;
+    typedef basic_stringref<wchar_t, ci_char_traits<wchar_t> > ciwstringref;
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>
