@@ -103,6 +103,13 @@ namespace mg {
             d = nullptr;
         }
 
+        void __int_clear()
+        {
+            __int_release_data(d_);
+            ptr_ = nullptr;
+            len_ = 0;
+        }
+
         static size_type __int_strlen(const_pointer string)
         {
             return (nullptr == string) ? 0 : _Traits::length(string);
@@ -277,49 +284,49 @@ namespace mg {
 
         basic_stringref& assign(const_pointer string)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, __int_strlen(string), 0, npos, false);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, __int_strlen(string), 0, npos, true);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, size_type size)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, size, 0, npos, false);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, size_type size, std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, size, 0, npos, true);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, size_type offset, size_type length)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, __int_strlen(string), offset, length, false);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, size_type offset, size_type length, std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, __int_strlen(string), offset, length, true);
             return *this;
         }
 
         basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, size, offset, length, false);
             return *this;
         }
@@ -327,7 +334,7 @@ namespace mg {
         basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length,
                                 std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string, size, offset, length, true);
             return *this;
         }
@@ -335,7 +342,7 @@ namespace mg {
         template<typename _OTraits, typename _OAlloc>
         basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), 0, npos, false);
             return *this;
         }
@@ -343,7 +350,7 @@ namespace mg {
         template<typename _OTraits, typename _OAlloc>
         basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), 0, npos, true);
             return *this;
         }
@@ -352,7 +359,7 @@ namespace mg {
         basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
                                 size_type length)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), offset, length, false);
             return *this;
         }
@@ -361,7 +368,7 @@ namespace mg {
         basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
                                 size_type length, std::true_type)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), offset, length, true);
             return *this;
         }
@@ -369,7 +376,7 @@ namespace mg {
         template<typename _OTraits, typename _OAlloc>
         basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), 0, npos, true);
             return *this;
         }
@@ -378,7 +385,7 @@ namespace mg {
         basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string, size_type offset,
                                 size_type length)
         {
-            __int_release_data(d_);
+            __int_clear();
             __int_construct(string.data(), string.size(), offset, length, true);
             return *this;
         }

@@ -1380,3 +1380,252 @@ TEST(Common, CiWCharTraits)
     EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 6, L'Г'), nullptr);
 }
 
+TEST_F(StandardAllocator, AssingFromOthersEmpty)
+{
+    std::string strempty;
+    std::wstring wstrempty;
+    std::string str("Test");
+    std::wstring wstr(L"Test");
+
+    using namespace mg;
+    stringref source("Test string", stringref::detached);
+    wstringref wsource(L"Test string", wstringref::detached);
+
+    stringref s01(source);
+    wstringref ws01(wsource);
+    s01.assign("");
+    ws01.assign(L"");
+    EXPECT_TRUE(s01.empty());
+    EXPECT_TRUE(ws01.empty());
+
+    stringref s02(source);
+    wstringref ws02(wsource);
+    s02.assign("", stringref::detached);
+    ws02.assign(L"", wstringref::detached);
+    EXPECT_TRUE(s02.empty());
+    EXPECT_TRUE(ws02.empty());
+
+    stringref s03(source);
+    wstringref ws03(wsource);
+    s03.assign("Test", 0);
+    ws03.assign(L"Test", 0);
+    EXPECT_TRUE(s03.empty());
+    EXPECT_TRUE(ws03.empty());
+
+    stringref s04(source);
+    wstringref ws04(wsource);
+    s04.assign("Test", 0, stringref::detached);
+    ws04.assign(L"Test", 0, wstringref::detached);
+    EXPECT_TRUE(s04.empty());
+    EXPECT_TRUE(ws04.empty());
+
+    stringref s05(source);
+    wstringref ws05(wsource);
+    s05.assign("Test", 5, 6);
+    ws05.assign(L"Test", 5, 6);
+    EXPECT_TRUE(s05.empty());
+    EXPECT_TRUE(ws05.empty());
+
+    stringref s06(source);
+    wstringref ws06(wsource);
+    s06.assign("Test", 5, 6, stringref::detached);
+    ws06.assign(L"Test", 5, 6, wstringref::detached);
+    EXPECT_TRUE(s06.empty());
+    EXPECT_TRUE(ws06.empty());
+
+    stringref s07(source);
+    wstringref ws07(wsource);
+    s07.assign("Test", 4, 5, 6);
+    ws07.assign(L"Test", 4, 5, 6);
+    EXPECT_TRUE(s07.empty());
+    EXPECT_TRUE(ws07.empty());
+
+    stringref s08(source);
+    wstringref ws08(wsource);
+    s08.assign("Test", 4, 5, 6, stringref::detached);
+    ws08.assign(L"Test", 4, 5, 6, wstringref::detached);
+    EXPECT_TRUE(s08.empty());
+    EXPECT_TRUE(ws08.empty());
+
+    stringref s09(source);
+    wstringref ws09(wsource);
+    s09.assign(strempty);
+    ws09.assign(wstrempty);
+    EXPECT_TRUE(s09.empty());
+    EXPECT_TRUE(ws09.empty());
+
+    stringref s10(source);
+    wstringref ws10(wsource);
+    s10.assign(strempty, stringref::detached);
+    ws10.assign(wstrempty, wstringref::detached);
+    EXPECT_TRUE(s10.empty());
+    EXPECT_TRUE(ws10.empty());
+
+    stringref s11(source);
+    wstringref ws11(wsource);
+    s11.assign(str, 5, 6);
+    ws11.assign(wstr, 5, 6);
+    EXPECT_TRUE(s11.empty());
+    EXPECT_TRUE(ws11.empty());
+
+    stringref s12(source);
+    wstringref ws12(wsource);
+    s12.assign(str, 5, 6, stringref::detached);
+    ws12.assign(wstr, 5, 6, wstringref::detached);
+    EXPECT_TRUE(s12.empty());
+    EXPECT_TRUE(ws12.empty());
+
+    stringref s13(source);
+    wstringref ws13(wsource);
+    s13.assign(std::string{});
+    ws13.assign(std::wstring{});
+    EXPECT_TRUE(s13.empty());
+    EXPECT_TRUE(ws13.empty());
+
+    stringref s14(source);
+    wstringref ws14(wsource);
+    s14.assign(std::string("Test"), 5, 6);
+    ws14.assign(std::wstring(L"Test"), 5, 6);
+    EXPECT_TRUE(s14.empty());
+    EXPECT_TRUE(ws14.empty());
+}
+
+TEST_F(CustomAllocator, AssingFromOthersEmpty)
+{
+    std::string strempty;
+    std::wstring wstrempty;
+    std::string str("Test");
+    std::wstring wstr(L"Test");
+
+    using namespace inplace;
+    stringref source("Test string", stringref::detached, a);
+    wstringref wsource(L"Test string", wstringref::detached, a2);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+
+    stringref s01(source);
+    wstringref ws01(wsource);
+    s01.assign("");
+    ws01.assign(L"");
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s01.empty());
+    EXPECT_TRUE(ws01.empty());
+
+    stringref s02(source);
+    wstringref ws02(wsource);
+    s02.assign("", stringref::detached);
+    ws02.assign(L"", wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s02.empty());
+    EXPECT_TRUE(ws02.empty());
+
+    stringref s03(source);
+    wstringref ws03(wsource);
+    s03.assign("Test", 0);
+    ws03.assign(L"Test", 0);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s03.empty());
+    EXPECT_TRUE(ws03.empty());
+
+    stringref s04(source);
+    wstringref ws04(wsource);
+    s04.assign("Test", 0, stringref::detached);
+    ws04.assign(L"Test", 0, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s04.empty());
+    EXPECT_TRUE(ws04.empty());
+
+    stringref s05(source);
+    wstringref ws05(wsource);
+    s05.assign("Test", 5, 6);
+    ws05.assign(L"Test", 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s05.empty());
+    EXPECT_TRUE(ws05.empty());
+
+    stringref s06(source);
+    wstringref ws06(wsource);
+    s06.assign("Test", 5, 6, stringref::detached);
+    ws06.assign(L"Test", 5, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s06.empty());
+    EXPECT_TRUE(ws06.empty());
+
+    stringref s07(source);
+    wstringref ws07(wsource);
+    s07.assign("Test", 4, 5, 6);
+    ws07.assign(L"Test", 4, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s07.empty());
+    EXPECT_TRUE(ws07.empty());
+
+    stringref s08(source);
+    wstringref ws08(wsource);
+    s08.assign("Test", 4, 5, 6, stringref::detached);
+    ws08.assign(L"Test", 4, 5, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s08.empty());
+    EXPECT_TRUE(ws08.empty());
+
+    stringref s09(source);
+    wstringref ws09(wsource);
+    s09.assign(strempty);
+    ws09.assign(wstrempty);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s09.empty());
+    EXPECT_TRUE(ws09.empty());
+
+    stringref s10(source);
+    wstringref ws10(wsource);
+    s10.assign(strempty, stringref::detached);
+    ws10.assign(wstrempty, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s10.empty());
+    EXPECT_TRUE(ws10.empty());
+
+    stringref s11(source);
+    wstringref ws11(wsource);
+    s11.assign(str, 5, 6);
+    ws11.assign(wstr, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s11.empty());
+    EXPECT_TRUE(ws11.empty());
+
+    stringref s12(source);
+    wstringref ws12(wsource);
+    s12.assign(str, 5, 6, stringref::detached);
+    ws12.assign(wstr, 5, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s12.empty());
+    EXPECT_TRUE(ws12.empty());
+
+    stringref s13(source);
+    wstringref ws13(wsource);
+    s13.assign(std::string{});
+    ws13.assign(std::wstring{});
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s13.empty());
+    EXPECT_TRUE(ws13.empty());
+
+    stringref s14(source);
+    wstringref ws14(wsource);
+    s14.assign(std::string("Test"), 5, 6);
+    ws14.assign(std::wstring(L"Test"), 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_TRUE(s14.empty());
+    EXPECT_TRUE(ws14.empty());
+}
