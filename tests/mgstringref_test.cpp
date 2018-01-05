@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 #elif defined(_WIN32)
     std::setlocale(LC_ALL, "ru-RU");
 #else
-    std::setlocale(LC_ALL, "ru_RU.utf8");
+    std::setlocale(LC_ALL, "ru_RU.UTF-8");
 #endif
 
     ::testing::InitGoogleTest(&argc, argv);
