@@ -1,6 +1,7 @@
 #include <atomic>
 #include <string>
 #include <limits>
+#include <cwctype>
 
 namespace mg {
     template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
@@ -497,6 +498,109 @@ namespace mg {
     typedef basic_stringref<char> stringref;
     typedef basic_stringref<char16_t> ustringref;
     typedef basic_stringref<wchar_t> wstringref;
+
+    template<typename _CharT>
+    struct ci_char_traits;
+
+    template<>
+    struct ci_char_traits<char> : public std::char_traits<char>
+    {
+        static bool
+        eq(const char_type& __c1, const char_type& __c2)
+        {
+            return std::toupper(static_cast<unsigned char>(__c1)) == std::toupper(static_cast<unsigned char>(__c2));
+        }
+
+        static bool
+        eq_int_type(int_type __c1, int_type __c2)
+        {
+            return ::toupper(__c1) == ::toupper(__c2);
+        }
+
+        static bool
+        lt(const char_type& __c1, const char_type& __c2)
+        {
+            return std::toupper(static_cast<unsigned char>(__c1)) < std::toupper(static_cast<unsigned char>(__c2));
+        }
+
+        static int
+        compare(const char_type* __s1, const char_type* __s2, size_t __n)
+        {
+            while(__n--) {
+                auto __c1 = std::toupper(static_cast<unsigned char>(*__s1));
+                auto __c2 = std::toupper(static_cast<unsigned char>(*__s2));
+                if (__c1 < __c2) {
+                    return (-1);
+                }
+                if (__c1 > __c2) {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+        static const char_type*
+        find( const char_type* __p, std::size_t __n, const char_type& __c)
+        {
+            auto __cu = std::toupper(static_cast<unsigned char>(__c));
+            for (; __n; --__n, ++__p) {
+                if (std::toupper(static_cast<unsigned char>(*__p)) == __cu) {
+                    return __p;
+                }
+            }
+            return nullptr;
+        }
+    };
+
+    template<>
+    struct ci_char_traits<wchar_t> : public std::char_traits<wchar_t>
+    {
+        static bool
+        eq(const char_type& __c1, const char_type& __c2)
+        {
+            return std::towupper(__c1) == std::towupper(__c2);
+        }
+
+        static bool
+        eq_int_type(int_type __c1, int_type __c2)
+        {
+            return ::towupper(__c1) == ::towupper(__c2);
+        }
+
+        static bool
+        lt(const char_type& __c1, const char_type& __c2)
+        {
+            return std::towupper(__c1) < std::towupper(__c2);
+        }
+
+        static int
+        compare(const char_type* __s1, const char_type* __s2, size_t __n)
+        {
+            while(__n--) {
+                auto __c1 = std::towupper(*__s1);
+                auto __c2 = std::towupper(*__s2);
+                if (__c1 < __c2) {
+                    return (-1);
+                }
+                if (__c1 > __c2) {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+        static const char_type*
+        find( const char_type* __p, std::size_t __n, const char_type& __c)
+        {
+            auto __cu = std::towupper(__c);
+            for (; __n; --__n, ++__p) {
+                if (std::towupper(*__p) == __cu) {
+                    return __p;
+                }
+            }
+            return nullptr;
+        }
+    };
 }
 
 template<typename T, typename _CharT, typename _Traits, typename _Alloc>

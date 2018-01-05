@@ -10,6 +10,8 @@
 
 int main(int argc, char** argv)
 {
+    std::setlocale(LC_ALL, "ru_RU.utf8");
+
     ::testing::InitGoogleTest(&argc, argv);
 
     printf("Enviroment:\n"
@@ -1257,3 +1259,117 @@ TEST_F(CustomAllocator, AssingFromOthers)
     EXPECT_EQ(s, "string");
     EXPECT_EQ(ws, L"string");
 }
+
+TEST(Common, CiCharTraits)
+{
+    using namespace mg;
+    EXPECT_TRUE(ci_char_traits<char>::eq('a', 'a'));
+    EXPECT_TRUE(ci_char_traits<char>::eq('A', 'a'));
+    EXPECT_TRUE(ci_char_traits<char>::eq('a', 'A'));
+
+    EXPECT_TRUE(ci_char_traits<char>::eq_int_type('a', 'a'));
+    EXPECT_TRUE(ci_char_traits<char>::eq_int_type('A', 'a'));
+    EXPECT_TRUE(ci_char_traits<char>::eq_int_type('a', 'A'));
+
+    EXPECT_TRUE(ci_char_traits<char>::lt('a', 'b'));
+    EXPECT_TRUE(ci_char_traits<char>::lt('A', 'b'));
+    EXPECT_TRUE(ci_char_traits<char>::lt('a', 'B'));
+
+    EXPECT_EQ(0, ci_char_traits<char>::compare("test", "test", 4));
+    EXPECT_EQ(0, ci_char_traits<char>::compare("test", "TEST", 4));
+    EXPECT_EQ(0, ci_char_traits<char>::compare("TEST", "test", 4));
+
+    EXPECT_EQ(0, ci_char_traits<char>::compare("testA", "testD", 4));
+    EXPECT_EQ(0, ci_char_traits<char>::compare("testB", "TESTF", 4));
+    EXPECT_EQ(0, ci_char_traits<char>::compare("TESTC", "testG", 4));
+
+    EXPECT_GT(0, ci_char_traits<char>::compare("abcd", "efgh", 4));
+    EXPECT_GT(0, ci_char_traits<char>::compare("abcd", "EFGH", 4));
+    EXPECT_GT(0, ci_char_traits<char>::compare("ABCD", "efgh", 4));
+
+    EXPECT_LT(0, ci_char_traits<char>::compare("efgh", "abcd", 4));
+    EXPECT_LT(0, ci_char_traits<char>::compare("efgh", "ABCD", 4));
+    EXPECT_LT(0, ci_char_traits<char>::compare("EFGH", "abcd", 4));
+
+    EXPECT_EQ(0, ci_char_traits<char>::compare("abc", "defg", 0));
+
+    const char test[] = "AaBbCcDd";
+    EXPECT_EQ(ci_char_traits<char>::find(test, 8, 'a') - test, 0);
+    EXPECT_EQ(ci_char_traits<char>::find(test, 8, 'A') - test, 0);
+    EXPECT_EQ(ci_char_traits<char>::find(test, 8, 'd') - test, 6);
+    EXPECT_EQ(ci_char_traits<char>::find(test, 8, 'D') - test, 6);
+    EXPECT_EQ(ci_char_traits<char>::find(test, 6, 'd'), nullptr);
+    EXPECT_EQ(ci_char_traits<char>::find(test, 6, 'D'), nullptr);
+}
+
+TEST(Common, CiWCharTraits)
+{
+    using namespace mg;
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'a', L'a'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'A', L'a'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'a', L'A'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'ж', L'ж'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'Ж', L'ж'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq(L'ж', L'Ж'));
+
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'a', L'a'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'A', L'a'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'a', L'A'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'ж', L'ж'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'Ж', L'ж'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::eq_int_type(L'ж', L'Ж'));
+
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'a', L'b'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'A', L'b'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'a', L'B'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'ю', L'я'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'Ю', L'я'));
+    EXPECT_TRUE(ci_char_traits<wchar_t>::lt(L'ю', L'Я'));
+
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"test", L"test", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"test", L"TEST", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"TEST", L"test", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"тест", L"тест", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"тест", L"ТЕСТ", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"ТЕСТ", L"тест", 4));
+
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"testA", L"testD", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"testB", L"TESTF", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"TESTC", L"testG", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"тестА", L"тестГ", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"тестБ", L"ТЕСТД", 4));
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"ТЕСТВ", L"тестЕ", 4));
+
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"abcd", L"efgh", 4));
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"abcd", L"EFGH", 4));
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"ABCD", L"efgh", 4));
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"абвг", L"деёж", 4));
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"абвг", L"ДЕЁЖ", 4));
+    EXPECT_GT(0, ci_char_traits<wchar_t>::compare(L"АБВГ", L"деёж", 4));
+
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"efgh", L"abcd", 4));
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"efgh", L"ABCD", 4));
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"EFGH", L"abcd", 4));
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"деёж", L"абвг", 4));
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"деёж", L"АБВГ", 4));
+    EXPECT_LT(0, ci_char_traits<wchar_t>::compare(L"ДЕЁЖ", L"абвг", 4));
+
+    EXPECT_EQ(0, ci_char_traits<wchar_t>::compare(L"abc", L"defg", 0));
+
+    const wchar_t test1[] = L"AaBbCcDd";
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 8, L'a') - test1, 0);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 8, L'A') - test1, 0);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 8, L'd') - test1, 6);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 8, L'D') - test1, 6);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 6, L'd'), nullptr);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test1, 6, L'D'), nullptr);
+
+    const wchar_t test2[] = L"АаБбВвГг";
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 8, L'а') - test2, 0);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 8, L'А') - test2, 0);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 8, L'г') - test2, 6);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 8, L'Г') - test2, 6);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 6, L'г'), nullptr);
+    EXPECT_EQ(ci_char_traits<wchar_t>::find(test2, 6, L'Г'), nullptr);
+}
+
