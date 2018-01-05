@@ -126,6 +126,15 @@ namespace mg {
             len_ = 0;
         }
 
+        basic_stringref& __int_assign(const_pointer string, size_type size, size_type offset, size_type length,
+                                      bool detach)
+        {
+            // TODO: check for we can reuse allocated data.
+            __int_clear();
+            __int_construct(string, size, offset, length, detach);
+            return *this;
+        }
+
         static size_type __int_strlen(const_pointer string)
         {
             return (nullptr == string) ? 0 : _Traits::length(string);
@@ -318,112 +327,84 @@ namespace mg {
             __int_release_data(d_);
         }
 
-        basic_stringref& assign(const_pointer string)
+        inline basic_stringref& assign(const_pointer string)
         {
-            __int_clear();
-            __int_construct(string, __int_strlen(string), 0, npos, false);
-            return *this;
+            return __int_assign(string, __int_strlen(string), 0, npos, false);
         }
 
-        basic_stringref& assign(const_pointer string, std::true_type)
+        inline basic_stringref& assign(const_pointer string, std::true_type)
         {
-            __int_clear();
-            __int_construct(string, __int_strlen(string), 0, npos, true);
-            return *this;
+            return __int_assign(string, __int_strlen(string), 0, npos, true);
         }
 
-        basic_stringref& assign(const_pointer string, size_type size)
+        inline basic_stringref& assign(const_pointer string, size_type size)
         {
-            __int_clear();
-            __int_construct(string, size, 0, npos, false);
-            return *this;
+            return __int_assign(string, size, 0, npos, false);
         }
 
-        basic_stringref& assign(const_pointer string, size_type size, std::true_type)
+        inline basic_stringref& assign(const_pointer string, size_type size, std::true_type)
         {
-            __int_clear();
-            __int_construct(string, size, 0, npos, true);
-            return *this;
+            return __int_assign(string, size, 0, npos, true);
         }
 
-        basic_stringref& assign(const_pointer string, size_type offset, size_type length)
+        inline basic_stringref& assign(const_pointer string, size_type offset, size_type length)
         {
-            __int_clear();
-            __int_construct(string, __int_strlen(string), offset, length, false);
-            return *this;
+            return __int_assign(string, __int_strlen(string), offset, length, false);
         }
 
-        basic_stringref& assign(const_pointer string, size_type offset, size_type length, std::true_type)
+        inline basic_stringref& assign(const_pointer string, size_type offset, size_type length, std::true_type)
         {
-            __int_clear();
-            __int_construct(string, __int_strlen(string), offset, length, true);
-            return *this;
+            return __int_assign(string, __int_strlen(string), offset, length, true);
         }
 
-        basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length)
+        inline basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length)
         {
-            __int_clear();
-            __int_construct(string, size, offset, length, false);
-            return *this;
+            return __int_assign(string, size, offset, length, false);
         }
 
-        basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length,
-                                std::true_type)
+        inline basic_stringref& assign(const_pointer string, size_type size, size_type offset, size_type length,
+                                       std::true_type)
         {
-            __int_clear();
-            __int_construct(string, size, offset, length, true);
-            return *this;
+            return __int_assign(string, size, offset, length, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string)
+        inline basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string)
         {
-            __int_clear();
-            __int_construct(string.data(), string.size(), 0, npos, false);
-            return *this;
+            return __int_assign(string.data(), string.size(), 0, npos, false);
         }
 
         template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, std::true_type)
+        inline basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, std::true_type)
         {
-            __int_clear();
-            __int_construct(string.data(), string.size(), 0, npos, true);
-            return *this;
+            return __int_assign(string.data(), string.size(), 0, npos, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
+        inline basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string,
+                                       size_type offset, size_type length)
+        {
+            return __int_assign(string.data(), string.size(), offset, length, false);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string,
+                                       size_type offset, size_type length, std::true_type)
+        {
+            return __int_assign(string.data(), string.size(), offset, length, true);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string)
+        {
+            return __int_assign(string.data(), string.size(), 0, npos, true);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string, size_type offset,
                                 size_type length)
         {
-            __int_clear();
-            __int_construct(string.data(), string.size(), offset, length, false);
-            return *this;
-        }
-
-        template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(const std::basic_string<value_type, _OTraits, _OAlloc>& string, size_type offset,
-                                size_type length, std::true_type)
-        {
-            __int_clear();
-            __int_construct(string.data(), string.size(), offset, length, true);
-            return *this;
-        }
-
-        template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string)
-        {
-            __int_clear();
-            __int_construct(string.data(), string.size(), 0, npos, true);
-            return *this;
-        }
-
-        template<typename _OTraits, typename _OAlloc>
-        basic_stringref& assign(std::basic_string<value_type, _OTraits, _OAlloc>&& string, size_type offset,
-                                size_type length)
-        {
-            __int_clear();
-            __int_construct(string.data(), string.size(), offset, length, true);
-            return *this;
+            return __int_assign(string.data(), string.size(), offset, length, true);
         }
 
         bool empty() const
