@@ -1,6 +1,7 @@
 #include <atomic>
 #include <string>
 #include <limits>
+#include <cctype>
 #include <cwctype>
 
 namespace mg {

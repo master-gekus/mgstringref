@@ -1,7 +1,8 @@
-#include "mgstringref.h"
+﻿#include "mgstringref.h"
 
 #include <cassert>
 #include <cstdio>
+#include <clocale>
 #include <new>
 #include <string>
 #include <map>
@@ -10,7 +11,13 @@
 
 int main(int argc, char** argv)
 {
+#if defined(__MINGW32__)
+    std::setlocale(LC_ALL, "Russian");
+#elif defined(_WIN32)
+    std::setlocale(LC_ALL, "ru-RU");
+#else
     std::setlocale(LC_ALL, "ru_RU.utf8");
+#endif
 
     ::testing::InitGoogleTest(&argc, argv);
 
