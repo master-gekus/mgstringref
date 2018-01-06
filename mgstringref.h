@@ -53,12 +53,8 @@ namespace mg {
         static_assert(0 == (sizeof(_Data) % sizeof(value_type)), "Invalid aligment.");
         static constexpr const std::size_t _Data_Header_Len = sizeof(_Data) / sizeof(value_type);
 
-        void __int_construct(const_pointer string, size_type size, size_type offset, size_type length, bool detach)
+        void __int_construct_nc(const_pointer string, size_type size, size_type offset, size_type length, bool detach)
         {
-            if ((nullptr == string) || (offset >= size) || (0 == length)) {
-                return;
-            }
-
             if (0 != offset) {
                 string += offset;
                 size -= offset;
@@ -75,6 +71,15 @@ namespace mg {
 
             // If lenght == npos, we will use size - offset, because npos is maximum value of size_type
             len_ = std::min(size, length);
+        }
+
+        inline void __int_construct(const_pointer string, size_type size, size_type offset, size_type length,
+                                    bool detach)
+        {
+            if ((nullptr == string) || (offset >= size) || (0 == length)) {
+                return;
+            }
+            __int_construct_nc(string, size, offset, length, detach);
         }
 
         template<typename _OTraits>
