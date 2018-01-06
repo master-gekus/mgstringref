@@ -6,6 +6,8 @@
 #include <new>
 #include <string>
 #include <map>
+#include <memory>
+#include <utility>
 
 #include <gtest/gtest.h>
 
@@ -38,12 +40,14 @@ namespace inplace {
     {
     public:
         typedef T value_type;
+        typedef std::pair<std::size_t, std::size_t> counters_type;
 
         allocator() = delete;
 
         inline allocator(void* buffer, size_t buffer_size, size_t block_size = 4096) :
             buffer_(static_cast<char*>(buffer)),
-            block_size_(block_size)
+            block_size_(block_size),
+            counters_(new counters_type(0,0))
         {
             if ((nullptr == buffer_) || (0 == buffer_size) || ((sizeof(std::size_t) + sizeof(T)) > block_size)
                 || (block_size > buffer_size)) {
@@ -57,7 +61,8 @@ namespace inplace {
         inline allocator(const allocator<U>& other) noexcept :
             buffer_(other.buffer_),
             block_size_(other.block_size_),
-            block_count_(other.block_count_)
+            block_count_(other.block_count_),
+            counters_(other.counters_)
         {
         }
 
@@ -70,6 +75,7 @@ namespace inplace {
                 std::size_t *header = reinterpret_cast<std::size_t*>(buffer_ + (i * block_size_));
                 if (0 == (*header)) {
                     (*header) = (n * sizeof(T));
+                    ++(counters_->first);
                     return reinterpret_cast<T*>(buffer_ + i * block_size_ + sizeof(size_t));
                 }
             }
@@ -84,6 +90,7 @@ namespace inplace {
                 || ((n * sizeof(T)) != (*header))) {
                 throw std::bad_alloc();
             }
+            ++(counters_->second);
             (*header) = 0;
         }
 
@@ -97,7 +104,7 @@ namespace inplace {
             return buffer_ != other.buffer_;
         }
 
-        size_t used_block_count()
+        size_t used_block_count() const
         {
             size_t count = 0;
             for (size_t i = 0; i < block_count_; i++) {
@@ -108,10 +115,26 @@ namespace inplace {
             return count;
         }
 
+        void clear_usage()
+        {
+            *counters_ = counters_type(0, 0);
+        }
+
+        size_t alloc_count() const
+        {
+            return counters_->first;
+        }
+
+        size_t dealloc_count() const
+        {
+            return counters_->second;
+        }
+
     private:
         char *buffer_;
         size_t block_size_;
         size_t block_count_;
+        std::shared_ptr<counters_type> counters_;
 
         template<typename U> friend class allocator;
     };
@@ -152,6 +175,8 @@ protected:
     {
         EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
         EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+        EXPECT_EQ(a.alloc_count(), a.dealloc_count());
+        EXPECT_EQ(a2.alloc_count(), a2.dealloc_count());
     }
 
     void CompareTest(const inplace::stringref& s, const inplace::wstringref& ws);
@@ -160,13 +185,18 @@ protected:
 TEST_F(CustomAllocator, StandardContainers)
 {
     using namespace inplace;
+    a.clear_usage();
     string *s = new string("String must be lenght enough to allocated memory.", a);
     string s1(*s);
     string s2 = *s;
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(3));
+    EXPECT_EQ(a.alloc_count(), static_cast<std::size_t>(3));
+    EXPECT_EQ(a.dealloc_count(), static_cast<std::size_t>(0));
     delete s;
     EXPECT_EQ(s1, s2);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
+    EXPECT_EQ(a.alloc_count(), static_cast<std::size_t>(3));
+    EXPECT_EQ(a.dealloc_count(), static_cast<std::size_t>(1));
 
     string s3(s1, a2);
     EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(2));
