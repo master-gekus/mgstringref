@@ -1756,3 +1756,135 @@ TEST_F(CustomAllocator, MoveAndCopyConstructWithOtherCharTraits)
     EXPECT_EQ(ws06, L"STRING");
 }
 
+TEST_F(CustomAllocator, AssingFromSelfOtherAllocator)
+{
+    mg::stringref sref("Test string");
+    mg::wstringref wsref(L"Test string");
+    mg::stringref scopy("Test string", mg::stringref::detached);
+    mg::wstringref wscopy(L"Test string", mg::wstringref::detached);
+    mg::stringref sempty;
+    mg::wstringref wsempty;
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+
+    using namespace inplace;
+
+//    template<typename _OTraits, typename _OAlloc>
+//    inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other)
+    stringref s01(a);
+    wstringref ws01(a2);
+    s01.assign(sref);
+    ws01.assign(wsref);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s01, "Test string");
+    EXPECT_EQ(ws01, L"Test string");
+    s01.assign(scopy);
+    ws01.assign(wscopy);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s01, "Test string");
+    EXPECT_EQ(ws01, L"Test string");
+    s01.assign(sempty);
+    ws01.assign(wsempty);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s01.empty());
+    EXPECT_TRUE(ws01.empty());
+
+
+//    template<typename _OTraits, typename _OAlloc>
+//    inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, std::true_type)
+    stringref s02(a);
+    wstringref ws02(a2);
+    s02.assign(sref, stringref::detached);
+    ws02.assign(wsref, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s02, "Test string");
+    EXPECT_EQ(ws02, L"Test string");
+    s02.assign(scopy, stringref::detached);
+    ws02.assign(wscopy, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s02, "Test string");
+    EXPECT_EQ(ws02, L"Test string");
+    s02.assign(sempty, stringref::detached);
+    ws02.assign(wsempty, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s02.empty());
+    EXPECT_TRUE(ws02.empty());
+
+//    template<typename _OTraits, typename _OAlloc>
+//    inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, size_type offset,
+//                                   size_type length)
+    stringref s03(a);
+    wstringref ws03(a2);
+    s03.assign(sref, 5, 6);
+    ws03.assign(wsref, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(s03, "string");
+    EXPECT_EQ(ws03, L"string");
+    s03.assign(scopy, 5, 6);
+    ws03.assign(wscopy, 5, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s03, "string");
+    EXPECT_EQ(ws03, L"string");
+    s03.assign(scopy, 5, 100);
+    ws03.assign(wscopy, 5, 100);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s03, "string");
+    EXPECT_EQ(ws03, L"string");
+    s03.assign(scopy, 20, 6);
+    ws03.assign(wscopy, 20, 6);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s03.empty());
+    EXPECT_TRUE(ws03.empty());
+    s03.assign(sempty);
+    ws03.assign(wsempty);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s03.empty());
+    EXPECT_TRUE(ws03.empty());
+
+//    template<typename _OTraits, typename _OAlloc>
+//    inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, size_type offset,
+//                                   size_type length, std::true_type)
+    stringref s04(a);
+    wstringref ws04(a2);
+    s04.assign(sref, 5, 6, stringref::detached);
+    ws04.assign(wsref, 5, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s04, "string");
+    EXPECT_EQ(ws04, L"string");
+    s04.assign(scopy, 5, 6, stringref::detached);
+    ws04.assign(wscopy, 5, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s04, "string");
+    EXPECT_EQ(ws04, L"string");
+    s04.assign(scopy, 5, 100, stringref::detached);
+    ws04.assign(wscopy, 5, 100, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(1));
+    EXPECT_EQ(s04, "string");
+    EXPECT_EQ(ws04, L"string");
+    s04.assign(scopy, 20, 6, wstringref::detached);
+    ws04.assign(wscopy, 20, 6, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s04.empty());
+    EXPECT_TRUE(ws04.empty());
+    s04.assign(sempty, stringref::detached);
+    ws04.assign(wsempty, wstringref::detached);
+    EXPECT_EQ(a.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_EQ(a2.used_block_count(), static_cast<std::size_t>(0));
+    EXPECT_TRUE(s04.empty());
+    EXPECT_TRUE(ws04.empty());
+}

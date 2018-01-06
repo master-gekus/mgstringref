@@ -407,6 +407,32 @@ namespace mg {
             return __int_assign(string.data(), string.size(), offset, length, true);
         }
 
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other)
+        {
+            return __int_assign(other.data(), other.size(), 0, npos, other.is_detached());
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, std::true_type)
+        {
+            return __int_assign(other.data(), other.size(), 0, npos, true);
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, size_type offset,
+                                       size_type length)
+        {
+            return __int_assign(other.data(), other.size(), offset, length, other.is_detached());
+        }
+
+        template<typename _OTraits, typename _OAlloc>
+        inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other, size_type offset,
+                                       size_type length, std::true_type)
+        {
+            return __int_assign(other.data(), other.size(), offset, length, true);
+        }
+
         bool empty() const
         {
             return (0 == len_);
@@ -435,23 +461,23 @@ namespace mg {
             return (nullptr != d_);
         }
 
-        int compare(const_pointer other) const
+        inline int compare(const_pointer other) const
         {
             return __int_compare(ptr_, len_, other, __int_strlen(other));
         }
 
-        int compare(const_pointer other, size_type other_size) const
+        inline int compare(const_pointer other, size_type other_size) const
         {
             return __int_compare(ptr_, len_, other, other_size);
         }
 
         template<typename _OTraits, typename _OAlloc>
-        int compare(const std::basic_string<value_type, _OTraits, _OAlloc>& string) const
+        inline int compare(const std::basic_string<value_type, _OTraits, _OAlloc>& string) const
         {
             return __int_compare(ptr_, len_, string.data(), string.size());
         }
 
-        int compare(const basic_stringref& other) const
+        inline int compare(const basic_stringref& other) const
         {
             if (this == &other) {
                 return 0;
@@ -460,43 +486,43 @@ namespace mg {
         }
 
         template<typename _OTraits, typename _OAlloc>
-        int compare(const basic_stringref<value_type, _OTraits, _OAlloc>& other) const
+        inline int compare(const basic_stringref<value_type, _OTraits, _OAlloc>& other) const
         {
             return __int_compare(ptr_, len_, other.data(), other.size());
         }
 
         template<typename T>
-        bool operator < (T other) const
+        inline bool operator < (T other) const
         {
             return (0 > compare(other));
         }
 
         template<typename T>
-        bool operator <= (T other) const
+        inline bool operator <= (T other) const
         {
             return (0 >= compare(other));
         }
 
         template<typename T>
-        bool operator > (T other) const
+        inline bool operator > (T other) const
         {
             return (0 < compare(other));
         }
 
         template<typename T>
-        bool operator >= (T other) const
+        inline bool operator >= (T other) const
         {
             return (0 <= compare(other));
         }
 
         template<typename T>
-        bool operator == (T other) const
+        inline bool operator == (T other) const
         {
             return (0 == compare(other));
         }
 
         template<typename T>
-        bool operator != (T other) const
+        inline bool operator != (T other) const
         {
             return (0 != compare(other));
         }
