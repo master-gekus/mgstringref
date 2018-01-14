@@ -34,7 +34,11 @@ ExternalProject_Get_Property(googletest BINARY_DIR)
 set(GTEST_LIBS_DIR ${BINARY_DIR}/googlemock/gtest)
 
 add_executable(${PROJECT_NAME}
-    mgstringref_test.cpp
+    mgstringref_test.h
+    mgstringref_test_main.cpp
+    mgstringref_test_constructors.cpp
+    mgstringref_test_comparison.cpp
+    mgstringref_test_assign.cpp
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 11

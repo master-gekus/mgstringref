@@ -461,6 +461,17 @@ namespace mg {
             return __int_copy_assign(other, offset, length, true);
         }
 
+        template<typename _OTraits>
+        basic_stringref& assign(const basic_stringref<value_type, _OTraits, _Alloc>& other);
+        template<typename _OTraits>
+        basic_stringref& assign(const basic_stringref<value_type, _OTraits, _Alloc>& other, std::true_type);
+        template<typename _OTraits>
+        basic_stringref& assign(const basic_stringref<value_type, _OTraits, _Alloc>& other, size_type offset,
+                                size_type length);
+        template<typename _OTraits>
+        basic_stringref& assign(const basic_stringref<value_type, _OTraits, _Alloc>& other, size_type offset,
+                                size_type length, std::true_type);
+
         template<typename _OTraits, typename _OAlloc>
         inline basic_stringref& assign(const basic_stringref<value_type, _OTraits, _OAlloc>& other)
         {
@@ -486,6 +497,22 @@ namespace mg {
         {
             return __int_assign(other.data(), other.size(), offset, length, true);
         }
+
+        basic_stringref& assign(basic_stringref&& other);
+        basic_stringref& assign(basic_stringref&& other, std::true_type);
+        basic_stringref& assign(basic_stringref&& other, size_type offset, size_type length);
+        basic_stringref& assign(basic_stringref&& other, size_type offset, size_type length, std::true_type);
+
+        template<typename _OTraits>
+        basic_stringref& assign(basic_stringref<value_type, _OTraits, _Alloc>&& other);
+        template<typename _OTraits>
+        basic_stringref& assign(basic_stringref<value_type, _OTraits, _Alloc>&& other, std::true_type);
+        template<typename _OTraits>
+        basic_stringref& assign(basic_stringref<value_type, _OTraits, _Alloc>&& other, size_type offset,
+                                size_type length);
+        template<typename _OTraits>
+        basic_stringref& assign(basic_stringref<value_type, _OTraits, _Alloc>&& other, size_type offset,
+                                size_type length, std::true_type);
 
         bool empty() const
         {
