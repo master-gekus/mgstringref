@@ -140,6 +140,35 @@ namespace mg {
             return *this;
         }
 
+        template<typename _OTraits>
+        basic_stringref& __int_copy_assign(const basic_stringref<value_type, _OTraits, _Alloc>& other,
+                                           size_type offset, size_type length, bool copy_detach)
+        {
+            if ((offset >= other.len_) || (0 == length)) {
+                __int_clear();
+            } else if (copy_detach) {
+                // TODO: check for we can reuse allocated data.
+                __int_clear();
+                __int_construct_nc(other.ptr_, other.len_, offset, length, true);
+            } else if (!other.d_) {
+                __int_clear();
+                __int_construct_nc(other.ptr_, other.len_, offset, length, false);
+            } else {
+                if ((!allocator_is_always_equal) && (a_ != other.a_)) {
+                    // TODO: check for we can reuse allocated data.
+                    __int_clear();
+                    __int_construct_nc(other.ptr_, other.len_, offset, length, true);
+                } else {
+                    __int_release_data(d_);
+                    d_ = reinterpret_cast<_Data*>(other.d_);
+                    ++(d_->ref_);
+                    ptr_ = other.ptr_ + offset;
+                    len_ = std::min(length, other.len_ - offset);
+                }
+            }
+            return *this;
+        }
+
         static size_type __int_strlen(const_pointer string)
         {
             return (nullptr == string) ? 0 : _Traits::length(string);
@@ -410,6 +439,26 @@ namespace mg {
                                 size_type length)
         {
             return __int_assign(string.data(), string.size(), offset, length, true);
+        }
+
+        basic_stringref& assign(const basic_stringref& other)
+        {
+            return __int_copy_assign(other, 0, npos, false);
+        }
+
+        basic_stringref& assign(const basic_stringref& other, std::true_type)
+        {
+            return __int_copy_assign(other, 0, npos, true);
+        }
+
+        basic_stringref& assign(const basic_stringref& other, size_type offset, size_type length)
+        {
+            return __int_copy_assign(other, offset, length, false);
+        }
+
+        basic_stringref& assign(const basic_stringref& other, size_type offset, size_type length, std::true_type)
+        {
+            return __int_copy_assign(other, offset, length, true);
         }
 
         template<typename _OTraits, typename _OAlloc>
